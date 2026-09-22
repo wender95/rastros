@@ -1,0 +1,18 @@
+﻿# build
+backend/target/
+frontend/node_modules/
+frontend/dist/
+
+# banco H2 local. O caminho do datasource e relativo: subir o jar de outra pasta
+# cria um banco vazio ali, entao o padrao vale para qualquer nivel.
+data/
+
+# backups do banco (backend/backups): ficam na maquina, nao no git
+backups/
+
+# logs da aplicacao em producao
+logs/
+backend/rodando/
+
+# ID da planilha real da agenda (usado pelo importar-agenda.ps1): fica so na maquina
+planilha-agenda.id

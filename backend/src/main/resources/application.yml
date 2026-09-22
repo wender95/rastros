@@ -1,0 +1,58 @@
+server:
+  port: ${SERVER_PORT:8080}
+
+spring:
+  application:
+    name: os-tracker-api
+  datasource:
+    url: ${DB_URL:jdbc:h2:file:./data/ostracker;DB_CLOSE_DELAY=-1;MODE=PostgreSQL}
+    username: ${DB_USER:sa}
+    password: ${DB_PASSWORD:}
+    driver-class-name: ${DB_DRIVER:org.h2.Driver}
+  # O schema e versionado em src/main/resources/db/migration. Num banco anterior ao
+  # Flyway, a versao 1 vira linha de base e so as migracoes seguintes rodam.
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    baseline-version: 1
+  jpa:
+    hibernate:
+      # Quem cria e altera tabela e o Flyway. O Hibernate so le e grava.
+      ddl-auto: none
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: false
+        # Associacoes carregadas em lote (ate 100 por consulta), nao uma a uma: a semana
+        # da agenda tem dezenas de carros apontando para as mesmas colunas e OS.
+        default_batch_fetch_size: 100
+  h2:
+    console:
+      # Fechado por padrao: o console da acesso direto ao banco, sem login do sistema.
+      enabled: ${H2_CONSOLE:false}
+      path: /h2-console
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+
+ostracker:
+  # Dados ficticios (OS de exemplo e usuarios de demonstracao) num banco vazio. Em
+  # producao fica desligado: so perfis, setores, matriz e um administrador.
+  carga-demo: ${CARGA_DEMO:true}
+  jwt:
+    # Vazio: a instalacao gera a propria chave em data/jwt.secret na primeira partida.
+    secret: ${JWT_SECRET:}
+    arquivo-segredo: ${JWT_ARQUIVO:./data/jwt.secret}
+    expiracao-horas: ${JWT_EXP_HORAS:12}
+  backup:
+    pasta: ${BACKUP_PASTA:./backups}
+    manter: ${BACKUP_MANTER:30}
+    # Todo dia util as 12:30 (segundo minuto hora dia mes dia-da-semana).
+    cron: ${BACKUP_CRON:0 30 12 * * MON-FRI}
+  cors:
+    origens: ${CORS_ORIGENS:http://localhost:5173,http://127.0.0.1:5173}
+
+logging:
+  level:
+    root: INFO
+    com.ostracker: INFO

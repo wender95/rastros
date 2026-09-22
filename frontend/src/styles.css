@@ -1,0 +1,2417 @@
+﻿:root {
+  --fundo: #f1f5f9;
+  --superficie: #ffffff;
+  --superficie-2: #f8fafc;
+  --borda: #e2e8f0;
+  --texto: #0f172a;
+  --texto-suave: #64748b;
+  --primaria: #1d4ed8;
+  --primaria-escura: #1e40af;
+  --primaria-clara: #eff6ff;
+  --sucesso: #15803d;
+  --sucesso-claro: #dcfce7;
+  --alerta: #b45309;
+  --alerta-claro: #fef3c7;
+  --perigo: #b91c1c;
+  --perigo-claro: #fee2e2;
+  --neutro-claro: #e2e8f0;
+  --raio: 10px;
+  --sombra: 0 1px 2px rgba(15, 23, 42, 0.06), 0 8px 24px rgba(15, 23, 42, 0.04);
+  color-scheme: light;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--fundo);
+  color: var(--texto);
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* ---------------------------------------------------------------- layout */
+
+.app {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.topo {
+  background: #0f172a;
+  color: #e2e8f0;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+
+.topo-interno {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  min-height: 60px;
+  flex-wrap: wrap;
+}
+
+.marca {
+  font-weight: 700;
+  font-size: 17px;
+  letter-spacing: -0.3px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.marca span {
+  color: #60a5fa;
+}
+
+.nav {
+  display: flex;
+  gap: 4px;
+  flex: 1;
+  flex-wrap: wrap;
+}
+
+.nav a {
+  padding: 8px 14px;
+  border-radius: 8px;
+  color: #94a3b8;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.nav a:hover {
+  color: #e2e8f0;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.nav a.ativo {
+  color: #ffffff;
+  background: rgba(96, 165, 250, 0.18);
+}
+
+.usuario-topo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+}
+
+.usuario-topo strong {
+  display: block;
+  color: #f8fafc;
+  font-size: 14px;
+}
+
+.usuario-topo small {
+  color: #94a3b8;
+}
+
+.conteudo {
+  flex: 1;
+  width: 100%;
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 26px 20px 60px;
+}
+
+.cabecalho-pagina {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.cabecalho-pagina h1 {
+  margin: 0;
+  font-size: 23px;
+  letter-spacing: -0.4px;
+}
+
+.cabecalho-pagina p {
+  margin: 4px 0 0;
+  color: var(--texto-suave);
+  font-size: 14px;
+}
+
+/* ----------------------------------------------------------------- cartoes */
+
+.cartao {
+  background: var(--superficie);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio);
+  box-shadow: var(--sombra);
+}
+
+.cartao-corpo {
+  padding: 18px;
+}
+
+.grade-kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 14px;
+  margin-bottom: 22px;
+}
+
+.kpi {
+  background: var(--superficie);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio);
+  padding: 16px 18px;
+  box-shadow: var(--sombra);
+}
+
+.kpi .valor {
+  font-size: 30px;
+  font-weight: 700;
+  letter-spacing: -1px;
+  line-height: 1.1;
+}
+
+.kpi .rotulo {
+  color: var(--texto-suave);
+  font-size: 12.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+  margin-top: 4px;
+}
+
+.duas-colunas {
+  display: grid;
+  grid-template-columns: 1.15fr 1fr;
+  gap: 18px;
+  align-items: start;
+}
+
+@media (max-width: 860px) {
+  .duas-colunas {
+    grid-template-columns: 1fr;
+  }
+}
+
+.titulo-secao {
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--texto-suave);
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--borda);
+}
+
+/* ---------------------------------------------------------------- tabelas */
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+th {
+  text-align: left;
+  font-size: 11.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--texto-suave);
+  padding: 10px 18px;
+  background: var(--superficie-2);
+  border-bottom: 1px solid var(--borda);
+  white-space: nowrap;
+}
+
+td {
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--borda);
+  vertical-align: middle;
+}
+
+tbody tr:last-child td {
+  border-bottom: none;
+}
+
+tbody tr.clicavel:hover {
+  background: var(--primaria-clara);
+  cursor: pointer;
+}
+
+.tabela-rolagem {
+  overflow-x: auto;
+}
+
+/* ------------------------------------------------------------------ chips */
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  background: var(--neutro-claro);
+  color: #334155;
+}
+
+.chip-aguardando {
+  background: var(--alerta-claro);
+  color: var(--alerta);
+}
+
+.chip-processando {
+  background: var(--primaria-clara);
+  color: var(--primaria);
+}
+
+.chip-encerrada {
+  background: var(--sucesso-claro);
+  color: var(--sucesso);
+}
+
+.chip-cancelada {
+  background: var(--perigo-claro);
+  color: var(--perigo);
+}
+
+.chip-setor {
+  background: #f1f5f9;
+  color: #0f172a;
+  border: 1px solid var(--borda);
+}
+
+/* ---------------------------------------------------------------- botoes */
+
+button {
+  font-family: inherit;
+  font-size: 14px;
+}
+
+.botao {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  padding: 9px 16px;
+  font-weight: 600;
+  cursor: pointer;
+  background: var(--primaria);
+  color: #fff;
+  transition: background 0.12s ease, opacity 0.12s ease;
+}
+
+.botao:hover:not(:disabled) {
+  background: var(--primaria-escura);
+}
+
+.botao:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.botao-secundario {
+  background: var(--superficie);
+  color: var(--texto);
+  border-color: var(--borda);
+}
+
+.botao-secundario:hover:not(:disabled) {
+  background: var(--superficie-2);
+}
+
+.botao-perigo {
+  background: var(--perigo);
+}
+
+.botao-perigo:hover:not(:disabled) {
+  background: #991b1b;
+}
+
+.botao-grande {
+  padding: 12px 20px;
+  font-size: 15px;
+}
+
+.botao-bloco {
+  width: 100%;
+}
+
+.acoes-linha {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* --------------------------------------------------------------- formularios */
+
+label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #334155;
+  margin-bottom: 6px;
+}
+
+input,
+select,
+textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--borda);
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 14.5px;
+  background: var(--superficie);
+  color: var(--texto);
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: 2px solid rgba(29, 78, 216, 0.25);
+  border-color: var(--primaria);
+}
+
+.campo {
+  margin-bottom: 14px;
+}
+
+.linha-campos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 14px;
+}
+
+.aviso {
+  padding: 11px 14px;
+  border-radius: 8px;
+  font-size: 14px;
+  margin-bottom: 14px;
+}
+
+.aviso-erro {
+  background: var(--perigo-claro);
+  color: var(--perigo);
+  border: 1px solid #fecaca;
+}
+
+.aviso-ok {
+  background: var(--sucesso-claro);
+  color: var(--sucesso);
+  border: 1px solid #bbf7d0;
+}
+
+.aviso-info {
+  background: var(--primaria-clara);
+  color: var(--primaria);
+  border: 1px solid #bfdbfe;
+}
+
+.vazio {
+  padding: 40px 20px;
+  text-align: center;
+  color: var(--texto-suave);
+  font-size: 14px;
+}
+
+/* ----------------------------------------------------------------- login */
+
+.login-tela {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: linear-gradient(160deg, #0f172a 0%, #1e293b 55%, #334155 100%);
+}
+
+.login-caixa {
+  width: 100%;
+  max-width: 400px;
+  background: var(--superficie);
+  border-radius: 14px;
+  padding: 30px;
+  box-shadow: 0 20px 60px rgba(2, 6, 23, 0.4);
+}
+
+.login-caixa h1 {
+  margin: 0 0 4px;
+  font-size: 24px;
+  letter-spacing: -0.5px;
+}
+
+.login-caixa .subtitulo {
+  margin: 0 0 22px;
+  color: var(--texto-suave);
+  font-size: 14px;
+}
+
+.contas-demo {
+  margin-top: 22px;
+  border-top: 1px solid var(--borda);
+  padding-top: 16px;
+}
+
+.contas-demo p {
+  margin: 0 0 8px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 700;
+  color: var(--texto-suave);
+}
+
+.contas-demo .lista {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.contas-demo button {
+  border: 1px solid var(--borda);
+  background: var(--superficie-2);
+  border-radius: 999px;
+  padding: 5px 11px;
+  font-size: 12.5px;
+  cursor: pointer;
+  color: #334155;
+}
+
+.contas-demo button:hover {
+  background: var(--primaria-clara);
+  border-color: #bfdbfe;
+  color: var(--primaria);
+}
+
+/* -------------------------------------------------------------- timeline */
+
+.timeline {
+  list-style: none;
+  margin: 0;
+  padding: 18px;
+}
+
+.timeline li {
+  position: relative;
+  padding: 0 0 22px 26px;
+  border-left: 2px solid var(--borda);
+}
+
+.timeline li:last-child {
+  padding-bottom: 0;
+  border-left-color: transparent;
+}
+
+.timeline li::before {
+  content: '';
+  position: absolute;
+  left: -7px;
+  top: 3px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--primaria);
+  border: 2px solid var(--superficie);
+}
+
+.timeline li.evento-CANCELAMENTO::before {
+  background: var(--perigo);
+}
+
+.timeline li.evento-ENTREGA::before {
+  background: var(--sucesso);
+}
+
+.timeline li.evento-RETORNO::before {
+  background: var(--alerta);
+}
+
+.timeline .linha-topo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.timeline .quando {
+  color: var(--texto-suave);
+  font-size: 12.5px;
+}
+
+.timeline .detalhe {
+  color: var(--texto-suave);
+  font-size: 13.5px;
+  margin-top: 2px;
+}
+
+.timeline .observacao {
+  margin-top: 6px;
+  background: var(--superficie-2);
+  border-left: 3px solid var(--borda);
+  padding: 7px 10px;
+  border-radius: 0 6px 6px 0;
+  font-size: 13.5px;
+}
+
+/* ---------------------------------------------------------------- diversos */
+
+.fila-lista {
+  display: grid;
+  gap: 12px;
+}
+
+.fila-item {
+  background: var(--superficie);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio);
+  padding: 16px 18px;
+  box-shadow: var(--sombra);
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.fila-item .os {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+}
+
+.fila-item .meta {
+  color: var(--texto-suave);
+  font-size: 13.5px;
+  margin-top: 2px;
+}
+
+.barra-filtros {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.barra-filtros input {
+  flex: 1;
+  min-width: 200px;
+}
+
+.barra-filtros select {
+  width: auto;
+  min-width: 190px;
+}
+
+.modal-fundo {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.55);
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  z-index: 50;
+}
+
+.modal {
+  background: var(--superficie);
+  border-radius: 12px;
+  width: 100%;
+  max-width: 460px;
+  padding: 24px;
+  box-shadow: 0 24px 60px rgba(2, 6, 23, 0.35);
+}
+
+.modal h2 {
+  margin: 0 0 4px;
+  font-size: 19px;
+}
+
+.modal .subtitulo {
+  margin: 0 0 18px;
+  color: var(--texto-suave);
+  font-size: 13.5px;
+}
+
+.rodape-modal {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.grade-setores {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+  padding: 18px;
+}
+
+.setor-card {
+  border: 1px solid var(--borda);
+  border-radius: 8px;
+  padding: 12px 14px;
+  background: var(--superficie-2);
+}
+
+.setor-card .nome {
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.3px;
+}
+
+.setor-card .numeros {
+  display: flex;
+  gap: 14px;
+  margin-top: 8px;
+  font-size: 12.5px;
+  color: var(--texto-suave);
+}
+
+.setor-card .numeros b {
+  display: block;
+  font-size: 19px;
+  color: var(--texto);
+}
+
+.linha-abas {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+}
+
+.linha-abas button {
+  border: 1px solid var(--borda);
+  background: var(--superficie);
+  padding: 8px 15px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--texto-suave);
+}
+
+.linha-abas button.ativo {
+  background: var(--primaria);
+  border-color: var(--primaria);
+  color: #fff;
+}
+
+.carregando {
+  padding: 50px;
+  text-align: center;
+  color: var(--texto-suave);
+}
+
+.grupo-fluxos {
+  display: grid;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.mono {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------------------------------------------------------- produtividade
+   Barras horizontais: categoria à esquerda, trilha no meio, valor rotulado na
+   ponta. Sem grade e sem eixo — com o valor em cada barra eles só somariam
+   ruído. Marcas finas, ponta arredondada de 4px, nada saturado em bloco.
+   -------------------------------------------------------------------------- */
+
+.viz-conteudo {
+  display: grid;
+  gap: 18px;
+}
+
+/* Recarregando: mantém o desenho anterior esmaecido, sem piscar esqueleto. */
+.viz-conteudo.recarregando {
+  opacity: 0.55;
+  transition: opacity 0.12s ease;
+}
+
+.grafico-cartao {
+  padding: 18px 20px 14px;
+}
+
+.grafico-cabecalho h2 {
+  margin: 0;
+  font-size: 15px;
+  letter-spacing: -0.2px;
+}
+
+.grafico-cabecalho p {
+  margin: 2px 0 16px;
+  font-size: 13px;
+  color: var(--texto-suave);
+}
+
+.grafico {
+  display: grid;
+  gap: 9px;
+}
+
+.viz-linha {
+  display: grid;
+  grid-template-columns: 128px 1fr 104px;
+  align-items: center;
+  gap: 12px;
+  /* Alvo de hover da linha inteira: a barra de 14px seria pequena demais. */
+  min-height: 26px;
+  border-radius: 6px;
+}
+
+.viz-linha:hover {
+  background: var(--primaria-clara);
+}
+
+.viz-rotulo {
+  font-size: 13px;
+  font-weight: 600;
+  text-align: right;
+  color: #334155;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* A trilha é a área do dado; a altura fina é intencional. */
+.viz-trilha {
+  position: relative;
+  display: block;
+  height: 14px;
+  border-radius: 4px;
+  background: #f1f5f9;
+  cursor: default;
+}
+
+.viz-barra {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  border-radius: 4px;
+  min-width: 3px;
+}
+
+/* Setor é categoria nominal: uma cor só para todas as barras. */
+.viz-setor {
+  background: #1d4ed8;
+}
+
+/* Agendado x concluído: mesma unidade, um eixo. O fundo não é cor de série. */
+.viz-agendado {
+  background: #cbd5e1;
+}
+
+.viz-concluido {
+  background: #15803d;
+  /* 2px de superfície separando os dois preenchimentos, em vez de borda. */
+  box-shadow: 2px 0 0 0 var(--superficie);
+}
+
+.viz-valor {
+  font-size: 13px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--texto);
+  white-space: nowrap;
+}
+
+.viz-valor-total {
+  font-weight: 500;
+  color: var(--texto-suave);
+}
+
+.grafico-rodape {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--borda);
+  flex-wrap: wrap;
+}
+
+.viz-nota {
+  font-size: 12.5px;
+  color: var(--texto-suave);
+  max-width: 62ch;
+}
+
+@media (max-width: 720px) {
+  .viz-linha {
+    grid-template-columns: 96px 1fr 88px;
+    gap: 8px;
+  }
+}
+
+/* --------------------------------------------------- relatório semanal */
+
+.relatorio-lista {
+  display: grid;
+  gap: 16px;
+}
+
+.relatorio-cabecalho {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--borda);
+}
+
+.relatorio-cabecalho h3 {
+  margin: 0;
+  font-size: 15px;
+  letter-spacing: -0.2px;
+}
+
+.relatorio-resumo {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  font-size: 13px;
+  color: var(--texto-suave);
+}
+
+.relatorio-resumo b {
+  color: var(--texto);
+  font-variant-numeric: tabular-nums;
+}
+
+.relatorio-resumo .alerta-resumo {
+  color: var(--alerta);
+  font-weight: 600;
+}
+
+.tabela-relatorio th,
+.tabela-relatorio td {
+  padding: 8px 18px;
+  font-size: 13px;
+}
+
+/* Bloqueio (falta, férias) não é serviço: fica recessivo na lista. */
+.tabela-relatorio .linha-bloqueio {
+  background: var(--superficie-2);
+  color: var(--texto-suave);
+}
+
+.rel-vendedor {
+  color: var(--texto-suave);
+  font-weight: 500;
+}
+
+.rel-link {
+  color: var(--primaria);
+  font-weight: 700;
+}
+
+.rel-vazio {
+  color: #cbd5e1;
+}
+
+.rel-pronto {
+  color: var(--sucesso);
+  font-weight: 600;
+  font-size: 12.5px;
+}
+
+.rel-producao {
+  color: var(--alerta);
+  font-weight: 600;
+  font-size: 12.5px;
+}
+
+/* O score se lança na linha do serviço. Campo largo o bastante para o dedo e para o
+   olho: o pessoal da produção usa esta tela, não só quem mexe em planilha. */
+.celula-score {
+  padding: 4px 18px !important;
+}
+
+.campo-score {
+  width: 68px;
+  padding: 7px 8px;
+  border: 1px solid var(--borda);
+  border-radius: 8px;
+  background: var(--superficie);
+  color: var(--texto);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+.campo-score::placeholder {
+  color: #cbd5e1;
+  font-weight: 400;
+}
+
+.campo-score:hover:not(:disabled) {
+  border-color: var(--primaria);
+}
+
+.campo-score:focus {
+  outline: 2px solid var(--primaria);
+  outline-offset: 1px;
+  border-color: var(--primaria);
+}
+
+.campo-score:disabled {
+  opacity: 0.5;
+}
+
+.titulo-impressao {
+  display: none;
+}
+
+/* O relatório é feito para ser impresso e entregue no chão de fábrica. */
+@media print {
+  .topo,
+  .sem-impressao,
+  .grafico-rodape button {
+    display: none !important;
+  }
+
+  .conteudo {
+    max-width: none;
+    padding: 0;
+  }
+
+  .titulo-impressao {
+    display: block;
+    font-size: 16px;
+    margin: 0 0 14px;
+  }
+
+  .cartao {
+    box-shadow: none;
+    border-color: #999;
+    break-inside: avoid;
+  }
+
+  .relatorio-lista {
+    gap: 12px;
+  }
+
+  .tabela-rolagem {
+    overflow: visible;
+  }
+
+  .chip {
+    border: 1px solid #999;
+    background: none !important;
+    color: #000 !important;
+  }
+
+  /* No papel o score é um número, não um campo. */
+  .campo-score {
+    border: none;
+    padding: 0;
+    width: auto;
+    text-align: left;
+  }
+}
+
+/* ---------------------------------------------------------------- agenda */
+
+.grade-agenda {
+  font-size: 12.5px;
+  table-layout: fixed;
+  min-width: 1100px;
+}
+
+.grade-agenda th {
+  position: relative;
+  text-align: center;
+  padding: 8px 6px;
+}
+
+.grade-agenda thead th {
+  font-size: 11px;
+}
+
+.grade-agenda .carga-cabecalho {
+  display: block;
+  margin-top: 2px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--primaria);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Barra de carga da semana por adesivador. */
+.grade-agenda .barra-carga {
+  display: block;
+  height: 4px;
+  margin-top: 4px;
+  border-radius: 2px;
+  background: var(--neutro-claro);
+  overflow: hidden;
+}
+
+.grade-agenda .barra-carga-preenchida {
+  display: block;
+  height: 100%;
+  background: var(--primaria);
+}
+
+.grade-agenda .barra-carga-preenchida.cheia {
+  background: var(--perigo);
+}
+
+.grade-agenda .col-dia {
+  width: 58px;
+  background: var(--superficie-2);
+  border-right: 2px solid #94a3b8;
+  vertical-align: top;
+  padding-top: 12px;
+}
+
+/* Coluna de horário: é a régua que mostra quanto do dia está ocupado. */
+.grade-agenda .col-horario {
+  width: 92px;
+  background: var(--superficie-2);
+  border-right: 1px solid var(--borda);
+  text-align: right;
+  padding: 4px 8px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #334155;
+  text-transform: none;
+  letter-spacing: 0;
+  vertical-align: top;
+  font-variant-numeric: tabular-nums;
+}
+
+.grade-agenda .marca-almoco {
+  display: block;
+  font-weight: 700;
+  font-size: 10px;
+  color: var(--alerta);
+  text-transform: uppercase;
+}
+
+/* Cada dia começa com uma linha grossa, para contar os dias de bate-pronto. */
+.grade-agenda tr.inicio-do-dia td,
+.grade-agenda tr.inicio-do-dia th {
+  border-top: 2px solid #94a3b8;
+}
+
+/* O almoço fica visivelmente fora do trabalho. */
+.grade-agenda tr.linha-almoco th.col-horario,
+.grade-agenda tr.linha-almoco td {
+  background-color: #f8fafc;
+  background-image: repeating-linear-gradient(
+    45deg,
+    rgba(148, 163, 184, 0.14) 0,
+    rgba(148, 163, 184, 0.14) 6px,
+    transparent 6px,
+    transparent 12px
+  );
+}
+
+.grade-agenda td.celula-almoco {
+  cursor: default;
+}
+
+.grade-agenda .dia-nome {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--texto);
+}
+
+.grade-agenda .dia-data {
+  font-size: 11.5px;
+  color: var(--texto-suave);
+  font-weight: 500;
+}
+
+.grade-agenda td {
+  padding: 0;
+  border: 1px solid var(--borda);
+  vertical-align: top;
+  height: 42px;
+}
+
+
+/* A célula é só o continente: o card é uma caixa com margem dentro dela, para a
+   fronteira entre dois serviços ficar óbvia sem depender da linha da tabela. */
+.celula-faixa {
+  display: table-cell;
+  padding: 2px !important;
+}
+
+/* Dois serviços na mesma faixa: a antiga 6ª linha da planilha cai aqui. */
+.celula-faixa.faixa-dividida .card-agenda + .card-agenda {
+  margin-top: 3px;
+}
+
+.card-agenda {
+  cursor: pointer;
+  position: relative;
+  height: 100%;
+  padding: 4px 7px 11px 11px;
+  border: 1px solid rgba(15, 23, 42, 0.14);
+  border-radius: 6px;
+  overflow: hidden;
+  transition: box-shadow 0.1s ease;
+}
+
+/* Barra colorida do status, de cima a baixo: amarra o bloco inteiro como um só. */
+.card-agenda::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: var(--barra, #94a3b8);
+}
+
+.card-agenda:hover {
+  box-shadow: 0 0 0 2px var(--primaria);
+  z-index: 1;
+}
+
+/* O almoço no meio de um serviço longo: pausa visível, sem partir o card. */
+.pausa-almoco {
+  position: absolute;
+  left: 4px;
+  right: 0;
+  background-color: rgba(248, 250, 252, 0.92);
+  background-image: repeating-linear-gradient(
+    45deg,
+    rgba(148, 163, 184, 0.3) 0,
+    rgba(148, 163, 184, 0.3) 5px,
+    transparent 5px,
+    transparent 11px
+  );
+  border-top: 1px dashed rgba(100, 116, 139, 0.55);
+  border-bottom: 1px dashed rgba(100, 116, 139, 0.55);
+  pointer-events: none;
+}
+
+/* ------------------------------------------------- arrastar para remanejar */
+
+.instrucao-arrastar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--primaria-clara);
+  border: 1px solid #bfdbfe;
+  color: #1e3a8a;
+  border-radius: var(--raio);
+  padding: 12px 16px;
+  margin-bottom: 14px;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+/* Um clique seleciona; o destaque precisa ser inconfundível. */
+.card-selecionado {
+  box-shadow: 0 0 0 3px var(--primaria);
+  border-color: var(--primaria);
+  z-index: 2;
+}
+
+.celula-vazia.celula-selecionada {
+  outline: 4px solid var(--primaria);
+  outline-offset: -4px;
+  background: var(--primaria-clara);
+  color: var(--primaria);
+}
+
+/* Barra que aparece enquanto há algo copiado esperando destino. */
+.barra-copia {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--alerta-claro);
+  border: 1px solid #fde68a;
+  color: #78350f;
+  border-radius: var(--raio);
+  padding: 10px 16px;
+  margin-bottom: 14px;
+  font-size: 14px;
+}
+
+.barra-copia .icone-copia {
+  font-size: 18px;
+}
+
+.barra-copia button {
+  margin-left: auto;
+}
+
+.instrucao-arrastar .icone-arrastar {
+  font-size: 22px;
+  line-height: 1;
+}
+
+.card-agenda.arrastavel {
+  cursor: grab;
+}
+
+.card-agenda.arrastavel:active {
+  cursor: grabbing;
+}
+
+/* O card que está sendo levado fica apagado, para o olho seguir o destino. */
+.card-agenda.em-arrasto {
+  opacity: 0.35;
+}
+
+/* Destino ocupado: sinaliza troca, não substituição. */
+.celula-faixa.alvo-troca {
+  background: rgba(29, 78, 216, 0.18);
+  box-shadow: inset 0 0 0 3px var(--primaria);
+}
+
+.celula-faixa.alvo-troca::after {
+  content: '⇅ trocam de lugar';
+  display: block;
+  padding: 0 7px 4px;
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--primaria);
+}
+
+/* Destino livre. */
+.celula-vazia.alvo-solte {
+  outline: 4px solid var(--sucesso);
+  outline-offset: -4px;
+  background: var(--sucesso-claro);
+  color: var(--sucesso);
+}
+
+.celula-vazia.alvo-solte::after {
+  content: 'soltar aqui';
+  display: block;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+/* ------------------------- redimensionar puxando a borda de baixo do card */
+
+.punho-redimensionar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 11px;
+  cursor: ns-resize;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Barrinha visível, para o alvo do mouse ser óbvio. */
+.punho-redimensionar::before {
+  content: '';
+  width: 34px;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(15, 23, 42, 0.28);
+}
+
+.card-agenda:hover .punho-redimensionar::before {
+  background: var(--primaria);
+  height: 5px;
+  width: 46px;
+}
+
+.card-agenda.em-redimensionamento {
+  box-shadow: 0 0 0 3px var(--primaria);
+  border-color: var(--primaria);
+  z-index: 2;
+}
+
+/* ---------------------------------------------------------------------------
+   Card da agenda: duas linhas, sempre do mesmo tamanho.
+   Linha 1 = nome do projeto em destaque. Linha 2 = vendedor e OS, discretos.
+   O horário mora na coluna da esquerda, então não se repete aqui.
+   --------------------------------------------------------------------------- */
+
+/* O nome do serviço aparece sempre inteiro, sem precisar do mouse: quebra em quantas
+   linhas precisar e, num card de uma faixa só, a linha da grade cresce para caber. */
+.card-nome {
+  font-weight: 700;
+  font-size: 12px;
+  line-height: 15px;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  letter-spacing: -0.1px;
+}
+
+.card-rodape {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 2px;
+  font-size: 10.5px;
+  line-height: 13px;
+  height: 13px;
+  color: rgba(15, 23, 42, 0.62);
+  font-weight: 600;
+}
+
+.card-rodape .rodape-texto {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.card-rodape .rodape-texto.destaque {
+  color: var(--primaria);
+  font-weight: 800;
+}
+
+/* Bolinha do andamento do material: verde pronto, âmbar em produção. */
+.ponto-material {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  margin-right: 4px;
+  vertical-align: baseline;
+}
+
+.ponto-material.pronto {
+  background: var(--sucesso);
+}
+
+.ponto-material.producao {
+  background: var(--alerta);
+}
+
+.card-rodape .marcador {
+  margin-left: auto;
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--alerta);
+  white-space: nowrap;
+}
+
+.card-agenda.sem-os {
+  border: 2px dashed var(--perigo);
+}
+
+.celula-vazia {
+  padding: 5px 7px;
+  cursor: pointer;
+  text-align: center;
+  color: transparent;
+}
+
+.celula-vazia:hover {
+  background: var(--primaria-clara);
+  color: var(--primaria);
+}
+
+.celula-vazia .mais {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+/* Cores da legenda do cronograma */
+.ag-programado {
+  background: #f8fafc;
+  color: #334155;
+  --barra: #94a3b8;
+}
+
+.ag-em_patio {
+  background: #e0f2fe;
+  color: #075985;
+  --barra: #0284c7;
+}
+
+.ag-executando {
+  background: #fef3c7;
+  color: #92400e;
+  --barra: #d97706;
+}
+
+.ag-concluido {
+  background: #dcfce7;
+  color: #166534;
+  --barra: #16a34a;
+}
+
+.ag-nao_veio {
+  background: #fee2e2;
+  color: #991b1b;
+  --barra: #dc2626;
+}
+
+.ag-externo {
+  background: #ede9fe;
+  color: #5b21b6;
+  --barra: #7c3aed;
+}
+
+.legenda-agenda {
+  display: flex;
+  gap: 7px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+}
+
+.alternador {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.alternador input {
+  width: auto;
+}
+
+.modal-largo {
+  max-width: 620px;
+  max-height: 88vh;
+  overflow-y: auto;
+}
+
+.seletor-status {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.seletor-status button {
+  border: 2px solid transparent;
+  cursor: pointer;
+}
+
+.seletor-status button.selecionado,
+.seletor-status .selecionado {
+  border-color: var(--texto);
+}
+
+.seletor-status button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.chip-numero {
+  min-width: 34px;
+  justify-content: center;
+  background: var(--superficie-2);
+  border: 2px solid var(--borda);
+  color: var(--texto);
+  font-variant-numeric: tabular-nums;
+  font-size: 13px;
+  padding: 5px 9px;
+}
+
+.chip-numero.selecionado {
+  background: var(--primaria);
+  border-color: var(--primaria);
+  color: #fff;
+}
+
+.chip-tipo {
+  background: var(--superficie-2);
+  border: 2px solid var(--borda);
+  color: var(--texto);
+  font-size: 13px;
+  padding: 6px 14px;
+}
+
+.chip-tipo.selecionado {
+  background: var(--primaria);
+  border-color: var(--primaria);
+  color: #fff;
+}
+
+.chip-tipo-bloqueio.selecionado {
+  background: #475569;
+  border-color: #475569;
+}
+
+.chip-horario {
+  background: var(--superficie-2);
+  border: 2px solid var(--borda);
+  color: var(--texto);
+  font-variant-numeric: tabular-nums;
+  font-size: 13px;
+  padding: 5px 10px;
+}
+
+.chip-horario.selecionado {
+  background: var(--primaria);
+  border-color: var(--primaria);
+  color: #fff;
+}
+
+/* Horários que a quantidade de horas escolhida vai preencher. */
+.previa-horarios {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: var(--primaria-clara);
+  border: 1px solid #bfdbfe;
+}
+
+.previa-rotulo {
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--primaria);
+}
+
+.faixa-previa {
+  background: var(--superficie);
+  border: 1px solid #bfdbfe;
+  border-radius: 6px;
+  padding: 2px 8px;
+  font-size: 12px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.faixa-previa.almoco {
+  background: var(--alerta-claro);
+  border-color: #fde68a;
+  color: var(--alerta);
+}
+
+.faixa-previa.transborda {
+  background: var(--alerta-claro);
+  border-color: #fde68a;
+  color: var(--alerta);
+  font-weight: 700;
+}
+
+/* Falta, férias, feriado: ocupa a agenda mas não é serviço. */
+.card-indisponivel {
+  background: #e2e8f0;
+  color: #475569;
+  --barra: #64748b;
+  background-image: repeating-linear-gradient(
+    135deg,
+    rgba(71, 85, 105, 0.16) 0,
+    rgba(71, 85, 105, 0.16) 5px,
+    transparent 5px,
+    transparent 11px
+  );
+}
+
+.card-indisponivel .card-nome {
+  letter-spacing: 0.4px;
+}
+
+.grade-agenda .carga-bloqueada {
+  display: block;
+  font-size: 10px;
+  font-weight: 700;
+  color: #475569;
+}
+
+.dica-campo {
+  display: block;
+  margin-top: 6px;
+  color: var(--texto-suave);
+  font-size: 12px;
+}
+
+.painel-material {
+  border-radius: 8px;
+  padding: 12px 14px;
+  margin-bottom: 16px;
+  border: 1px solid var(--borda);
+}
+
+.painel-material.pronto {
+  background: var(--sucesso-claro);
+  border-color: #bbf7d0;
+}
+
+.painel-material.producao {
+  background: var(--alerta-claro);
+  border-color: #fde68a;
+}
+
+.painel-material-topo {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.painel-material-topo a {
+  color: var(--primaria);
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.material-alerta {
+  font-size: 13px;
+  color: var(--perigo);
+  font-weight: 600;
+}
+
+.tabela-material td {
+  padding: 5px 8px 5px 0;
+  border: none;
+  font-size: 13px;
+}
+
+.tabela-material a {
+  color: var(--primaria);
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.atraso-alto {
+  color: var(--perigo);
+  font-weight: 600;
+}
+
+/* ------------------------------------------------------- troca de senha */
+
+.dica-campo.dica-erro {
+  color: var(--perigo);
+  font-weight: 600;
+}
+
+.espaco-topo {
+  margin-top: 12px;
+}
+
+.cartao-estreito {
+  max-width: 440px;
+  padding: 20px;
+}
+
+/* ------------------------------------------------------------- backups */
+
+.lista-backups {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.lista-backups li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--borda);
+  font-size: 13px;
+}
+
+.lista-backups li:last-child {
+  border-bottom: none;
+}
+
+.lista-backups .mono {
+  overflow-wrap: anywhere;
+}
+
+.link-topo {
+  color: #94a3b8;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.link-topo:hover {
+  color: #e2e8f0;
+}
+
+/* ------------------------------------------------------- agenda no toque */
+
+/* Duplo toque na grade abre o carro em vez de dar zoom; rolar e pinçar seguem valendo. */
+.grade-agenda {
+  touch-action: manipulation;
+}
+
+/* Segurar o dedo no carro "pega" o carro: sem menu do sistema nem selecao de texto. */
+.card-agenda {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* A barrinha de baixo nunca rola a tela: o dedo nela so muda a duracao. */
+.punho-redimensionar {
+  touch-action: none;
+}
+
+/* Com o carro na mao, a faixa de destino fica evidente mesmo sob o dedo. */
+.grade-agenda.arrastando .celula-vazia[data-alvo] {
+  background: rgba(29, 78, 216, 0.04);
+}
+
+@media (pointer: coarse) {
+  /* Dedo nao e ponteiro: alvo maior e barrinha sempre visivel. */
+  .punho-redimensionar {
+    height: 22px;
+  }
+
+  .punho-redimensionar::before {
+    width: 46px;
+    height: 5px;
+    background: rgba(15, 23, 42, 0.4);
+  }
+}
+
+/* Servico que veio da semana anterior: o card comeca cortado no alto da segunda. */
+.card-continua {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--texto-suave);
+  letter-spacing: 0.2px;
+}
+
+/* ------------------------------------------------------- tela do setor */
+/* Feita para quem nao tem pratica com computador: letra grande, poucos botoes, alvos
+   largos o bastante para o dedo. */
+
+.movimentar {
+  max-width: 860px;
+  margin: 0 auto;
+}
+
+.movimentar-topo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.movimentar-topo h1 {
+  margin: 0;
+  font-size: 30px;
+  letter-spacing: -0.5px;
+}
+
+.movimentar-secao {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 26px 0 12px;
+  font-size: 19px;
+}
+
+.movimentar-secao .contador {
+  min-width: 30px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: var(--primaria);
+  color: #fff;
+  font-size: 15px;
+  text-align: center;
+}
+
+.movimentar-vazio {
+  margin: 0;
+  padding: 18px;
+  border: 1px dashed var(--borda);
+  border-radius: var(--raio);
+  color: var(--texto-suave);
+  font-size: 16px;
+  text-align: center;
+}
+
+.movimentar-lista {
+  display: grid;
+  gap: 12px;
+}
+
+.os-cartao {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 18px 20px;
+  background: var(--superficie);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio);
+  box-shadow: var(--sombra);
+}
+
+.os-cartao-aberto {
+  border-color: var(--primaria);
+  box-shadow: 0 0 0 2px rgba(29, 78, 216, 0.15);
+}
+
+.os-numero {
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.3px;
+}
+
+.os-detalhe {
+  font-size: 16px;
+  margin-top: 2px;
+}
+
+.os-suave {
+  color: var(--texto-suave);
+  font-size: 14.5px;
+}
+
+.os-botoes,
+.os-destinos {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.os-botoes .botao-grande,
+.os-destinos .botao-grande {
+  min-height: 54px;
+  min-width: 150px;
+  font-size: 17px;
+}
+
+.botao-receber {
+  background: var(--sucesso);
+}
+
+.botao-receber:hover:not(:disabled) {
+  background: #166534;
+}
+
+.botao-devolver {
+  background: var(--alerta);
+}
+
+.botao-devolver:hover:not(:disabled) {
+  background: #92400e;
+}
+
+.os-escolha {
+  flex-basis: 100%;
+  display: grid;
+  gap: 12px;
+  justify-items: start;
+}
+
+.os-pergunta {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 700;
+}
+
+@media (max-width: 560px) {
+  .os-botoes,
+  .os-destinos {
+    width: 100%;
+  }
+
+  .os-botoes .botao-grande,
+  .os-destinos .botao-grande {
+    flex: 1 1 100%;
+  }
+}
+
+/* ------------------------------------------------ produtividade por setor */
+
+.prod-grade {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(380px, 100%), 1fr));
+  gap: 18px;
+  align-items: start;
+}
+
+.prod-largo {
+  grid-column: 1 / -1;
+}
+
+.prod-numeros {
+  display: flex;
+  gap: 26px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.prod-numero strong {
+  display: block;
+  font-size: 26px;
+  letter-spacing: -0.6px;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+
+.prod-numero span {
+  font-size: 12.5px;
+  color: var(--texto-suave);
+}
+
+.prod-lado-a-lado {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(320px, 100%), 1fr));
+  gap: 26px;
+}
+
+.prod-subtitulo {
+  margin: 0 0 10px;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--texto-suave);
+}
+
+@media (max-width: 480px) {
+  .prod-grade {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Modo edição dos adesivadores da agenda */
+.lista-adesivadores {
+  list-style: none;
+  margin: 0 0 14px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.lista-adesivadores li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border: 1px solid var(--borda);
+  border-radius: 8px;
+}
+
+.lista-adesivadores input,
+.adicionar-adesivador input {
+  flex: 1;
+  min-width: 0;
+}
+
+.ordem-adesivador {
+  width: 24px;
+  text-align: center;
+  color: var(--texto-suave);
+  font-variant-numeric: tabular-nums;
+}
+
+.nome-adesivador {
+  flex: 1;
+  font-weight: 600;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.nome-adesivador small {
+  font-weight: 400;
+  color: var(--texto-suave);
+}
+
+.botao-icone {
+  padding-left: 12px;
+  padding-right: 12px;
+}
+
+.adicionar-adesivador {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.titulo-removidos {
+  font-size: 15px;
+  margin: 8px 0 2px;
+}
+
+.lista-adesivadores.removidos .nome-adesivador {
+  color: var(--texto-suave);
+  font-weight: 400;
+}
+
+@media (max-width: 600px) {
+  .lista-adesivadores li {
+    flex-wrap: wrap;
+  }
+}
+
+/* Relatório semanal: resumo de pontos e serviço que passa de um dia */
+.relatorio-pontos {
+  margin-bottom: 16px;
+}
+
+.relatorio-pontos h3 {
+  margin: 0;
+  padding: 14px 18px;
+  font-size: 15px;
+  border-bottom: 1px solid var(--borda);
+}
+
+.tabela-relatorio .num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.tabela-relatorio tfoot td {
+  border-top: 2px solid var(--borda);
+  font-weight: 600;
+}
+
+.rel-dias {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  background: var(--alerta-claro, #fef3c7);
+  color: var(--alerta, #b45309);
+  white-space: nowrap;
+}
+
+/* Tela Pátio e prateleira: as duas colunas lado a lado, com busca */
+.patio-prateleira {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.patio-dica {
+  margin: -8px 0 14px;
+  color: var(--texto-suave);
+}
+
+.patio-busca {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.patio-busca input {
+  flex: 1;
+  min-width: 0;
+  font-size: 16px;
+  padding: 12px 14px;
+}
+
+.patio-colunas {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+  align-items: start;
+}
+
+.patio-coluna .movimentar-secao {
+  margin-top: 16px;
+}
+
+/* Na coluna estreita o botão desce para baixo da identificação. */
+.patio-coluna .os-cartao {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.patio-coluna .os-botoes {
+  justify-content: flex-end;
+}
+
+.os-servico {
+  margin-top: 2px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--primaria);
+}
+
+@media (max-width: 800px) {
+  .patio-colunas {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Barrinha de cima do card: muda o início, o fim fica. Só um pegador no centro da
+   borda - o resto do topo (onde fica o nome) continua sendo o lugar de arrastar o card. */
+.punho-redimensionar.punho-topo {
+  top: 0;
+  bottom: auto;
+  left: 50%;
+  right: auto;
+  width: 44px;
+  height: 8px;
+  transform: translateX(-50%);
+  z-index: 2;
+}
+
+.punho-redimensionar.punho-topo::before {
+  width: 30px;
+  height: 3px;
+}
+
+.card-agenda:hover .punho-redimensionar.punho-topo::before {
+  width: 38px;
+  height: 4px;
+}
+
+/* Carro recortado com Ctrl+X, esperando o Ctrl+V. */
+.card-agenda.card-recortado {
+  opacity: 0.45;
+  border-style: dashed;
+}
+
+/* Administração > Feriados */
+.form-feriado {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 12px 0;
+}
+
+.form-feriado input[type='date'] {
+  flex: 0 0 170px;
+}
+
+.form-feriado input:not([type='date']) {
+  flex: 1;
+  min-width: 180px;
+}
+
+/* No tablet o pegador de cima cresce para o dedo, mas continua só no centro da borda. */
+@media (pointer: coarse) {
+  .punho-redimensionar.punho-topo {
+    width: 48px;
+    height: 16px;
+  }
+
+  .punho-redimensionar.punho-topo::before {
+    width: 34px;
+    height: 5px;
+  }
+}
+
+/* Celular: campo com letra de 16px, senão o iPhone dá zoom sozinho ao tocar nele. */
+@media (max-width: 800px), (pointer: coarse) {
+  input,
+  select,
+  textarea {
+    font-size: 16px;
+  }
+}
+
+/* Minha agenda (adesivador, no celular) */
+.minha-agenda-dia {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.minha-agenda-data {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1.2;
+}
+
+.minha-agenda-data strong {
+  font-size: 20px;
+  text-transform: capitalize;
+}
+
+.minha-agenda-data span {
+  color: var(--texto-suave);
+}
+
+.minha-agenda-hoje {
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+.carro-do-dia {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.carro-do-dia .os-numero {
+  font-size: 19px;
+  overflow-wrap: anywhere;
+}
+
+.carro-horario {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--primaria);
+}
+
+.carro-do-dia .os-botoes .botao {
+  width: 100%;
+}
+
+.carro-bloqueio {
+  opacity: 0.7;
+  border-style: dashed;
+}
+
+/* Navegação por mês (Agenda, Produtividade, Relatório) */
+.nav-mes {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.nav-mes-topo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.nav-mes-nome {
+  min-width: 150px;
+  text-align: center;
+  font-size: 17px;
+}
+
+.nav-mes-semanas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.chip-periodo {
+  padding: 6px 12px;
+  border: 1px solid var(--borda);
+  border-radius: 999px;
+  background: var(--superficie);
+  color: var(--texto);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  font-variant-numeric: tabular-nums;
+}
+
+.chip-periodo:hover {
+  border-color: var(--primaria);
+}
+
+.chip-periodo.ativo {
+  background: var(--primaria);
+  border-color: var(--primaria);
+  color: #fff;
+}
+
+.chip-periodo-num {
+  opacity: 0.7;
+  font-weight: 500;
+}
+
+/* Marca no topo e no login. */
+.marca-logo {
+  display: block;
+  height: 32px;
+  width: auto;
+}
+
+@media (max-width: 800px) {
+  .marca-logo {
+    height: 26px;
+  }
+}
+
+.login-caixa .login-marca {
+  margin: -30px -30px 18px;
+  padding: 26px 30px;
+  border-radius: 14px 14px 0 0;
+  background: #0f172a;
+  color: #fff;
+  text-align: center;
+  font-size: 30px;
+  letter-spacing: -0.5px;
+}
+
+.login-marca span {
+  color: #60a5fa;
+}
+
+/* Painel: escolha do período e os dois grupos (agora / período) */
+.painel-periodo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.painel-grupo {
+  margin: 6px 0 8px;
+}
+
+.grade-setores {
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+}
+
+.setor-card .numeros {
+  flex-wrap: wrap;
+  row-gap: 4px;
+}
+
+/* Cartões em coluna (Minha agenda, Pátio e prateleira): a confirmação fica embaixo do
+   cartão. O "flex-basis: 100%" do .os-escolha foi feito para cartões em linha — numa
+   coluna ele vira altura e empurrava a confirmação para uma coluna nova, fora da tela. */
+.carro-do-dia,
+.patio-coluna .os-cartao {
+  flex-wrap: nowrap;
+}
+
+.carro-do-dia .os-escolha,
+.patio-coluna .os-cartao .os-escolha {
+  flex-basis: auto;
+  justify-items: stretch;
+}
+
+.carro-do-dia .os-destinos .botao,
+.patio-coluna .os-cartao .os-destinos .botao {
+  flex: 1 1 140px;
+}

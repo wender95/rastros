@@ -1,0 +1,7 @@
+# Normaliza quebras de linha no repositorio (LF), independente do sistema de quem edita.
+* text=auto eol=lf
+
+# Scripts do Windows precisam de CRLF para rodar em qualquer terminal.
+*.ps1 text eol=crlf
+*.cmd text eol=crlf
+*.bat text eol=crlf
