@@ -29,7 +29,11 @@ Microsoft) ou pelo `PATH`; o Maven pelo `MAVEN_HOME`, por uma pasta `.tools\apac
 ao lado do projeto ou pelo `PATH`; e o Node em `Program Files\nodejs`. Assim eles funcionam
 também em terminais abertos antes de instalar algo e na tarefa agendada do Windows.
 
-## Produção: um endereço só
+## O pacote: API e tela num endereço só
+
+Na empresa, o sistema roda no **servidor da empresa** e sai na internet pelo **Cloudflare
+Tunnel**, com domínio próprio e HTTPS (próxima seção). O pacote e os passos abaixo são a base
+disso, e também servem para rodar numa máquina só, na rede interna.
 
 A API e a tela saem num **único jar** e ficam em <http://localhost:8080>, sem o servidor
 do Vite.
@@ -86,6 +90,25 @@ New-NetFirewallRule -DisplayName 'RastrOS' -Direction Inbound -Protocol TCP -Loc
 
 > A tarefa e o `iniciar-backend.ps1` usam a mesma porta 8080: com a tarefa registrada, não
 > suba o backend de desenvolvimento ao mesmo tempo.
+
+## Produção (como roda hoje): servidor da empresa + Cloudflare Tunnel
+
+Para o sistema abrir de qualquer lugar (como `https://empresa.rastros.cloud`) sem abrir porta
+no roteador: o pacote **RastrOS-portatil** vai para o servidor e o **Cloudflare Tunnel**
+publica o endereço, com HTTPS. Os arquivos ficam em `servidor/` (e dentro do pacote):
+
+| Arquivo | Para quê |
+| :--- | :--- |
+| `SERVIDOR-INSTALAR.ps1` | registra o sistema para subir com o Windows e liga; com `-TokenCloudflare <token>` liga também o túnel; `-Reiniciar` depois de trocar o `app.jar`; `-Remover` |
+| `SERVIDOR-INICIAR.cmd` | o arranque que a tarefa usa: produção (`CARGA_DEMO=false`), "agir como" ligado na fase de teste, cidade da previsão do tempo |
+| `SERVIDOR-LEIA-ME.txt` | o passo a passo completo: copiar, trazer os dados, criar o túnel no painel do Cloudflare, desligar o "agir como" |
+
+Cuidados já no instalador: num **banco novo**, ele mostra a senha provisória do admin e
+**não liga o túnel** até ela ser trocada em `http://localhost:8080` — senão o primeiro
+acesso ficaria aberto na internet. O login tem **freio contra adivinhar senha** (5 erros
+seguidos no mesmo usuário, ou 20 do mesmo endereço, fecham por 15 minutos; atrás do
+Cloudflare o endereço vem do `CF-Connecting-IP`). A conexão de tempo real vai sem *buffer*
+e com batida a cada 25 s, abaixo do limite de conexão parada do Cloudflare.
 
 ### Fase de teste: o administrador "agindo como" outra pessoa
 
@@ -169,7 +192,7 @@ O `gerar-pacote.ps1` roda os dois antes de montar o jar. O que está coberto:
 | `MoverComTamanhoTest` | mover levando o tamanho do destino: um serviço de um espaço continua com um espaço em qualquer lugar do dia, inclusive atravessando o almoço, e na troca cada um chega com o tamanho que a tela pediu |
 | `regua.test.ts`, `blocos.test.ts`, `periodos.test.ts`, `duracao.test.ts` (Vitest) | as contas da grade no navegador batem com as do servidor; os 5 pedaços do dia da agenda simplificada; semanas cortadas no mês; tempo em dias úteis |
 
-São **175 testes no backend e 43 no frontend**.
+São **220 testes no backend e 30 no frontend**.
 
 Os testes rodam em bancos próprios (H2 em memória e PostgreSQL temporário): **nunca tocam
 o banco da empresa**.

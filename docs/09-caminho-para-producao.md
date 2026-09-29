@@ -1,6 +1,6 @@
 # 9. Caminho para Produção
 
-> Diagnóstico de onde o RastrOS está (atualizado em 22/09/2026) e o que falta para ele
+> Diagnóstico de onde o RastrOS está (atualizado em 29/09/2026) e o que falta para ele
 > ser o sistema oficial da operação, no lugar da planilha. O [roadmap original](./08-roadmap.md)
 > descreve a visão de produto; este documento trata de **colocar essa visão no ar e mantê-la
 > no ar**.
@@ -25,8 +25,10 @@ Não é só "o sistema abre no navegador". Um sistema está em produção quando
 
 ## 9.2 Estado atual
 
-O sistema está **em uso na empresa desde 21/09/2026**, rodando numa máquina da rede interna
-e acessado por computador e celular — na prática, a fase de piloto (Fase 3) já começou.
+O sistema está **em uso na empresa desde 21/09/2026** e, desde o fim de setembro, **na
+internet**: roda no servidor da empresa e é publicado pelo **Cloudflare Tunnel** no domínio
+próprio (`rastros.cloud`, um subdomínio por empresa), com HTTPS, sem abrir porta no roteador. As OS
+chegam do ERP pela extensão do navegador, e a frota trabalha pela *Minha agenda* no celular.
 
 ### ✅ O que já está pronto
 
@@ -34,27 +36,26 @@ e acessado por computador e celular — na prática, a fase de piloto (Fase 3) j
 | :--- | :--- |
 | Funcionalidades | Rastreio de OS por setor, matriz de transição, Financeiro que conclui, pátio e prateleira; agenda com arrastar/redimensionar/trocar/recortar/desfazer; *Minha agenda* do adesivador; painel, produtividade e relatório por período |
 | Regras no servidor | Permissões por perfil validadas na API; eventos imutáveis |
-| Banco | Migrações Flyway V1–V11, backup automático antes de cada uma; H2 e **PostgreSQL comprovado em teste** |
-| Qualidade | 175 testes no backend, 43 no frontend; o build de produção falha se um teste falhar |
-| Segurança básica | JWT com chave por instalação, BCrypt, senha provisória obrigatória, política de senha, console H2 fechado |
-| Empacotamento | Um único `.jar` com API e tela; pasta portátil com Java embutido para rodar em qualquer Windows |
-| Operação | Sobe com o Windows (`instalar-servico.ps1`), backup diário, restauração por script, feriados cadastráveis |
-| Migração de dados | Importador do Google Sheets; gerador de dados fictícios para teste, com limpeza |
+| Banco | Migrações Flyway V1–V20, backup automático antes de cada uma, *hash* das migrações publicadas conferido em teste; H2 e **PostgreSQL comprovado em teste** |
+| Qualidade | 220 testes no backend, 30 no frontend; o build de produção falha se um teste falhar |
+| Segurança | HTTPS pelo Cloudflare, nenhuma porta aberta; JWT com chave por instalação, BCrypt, senha provisória obrigatória, política de senha, freio contra adivinhar senha, CORS só do endereço da empresa, console H2 fechado; trava otimista (`@Version`) na movimentação de OS |
+| Empacotamento | Um único `.jar` com API e tela; pasta portátil com Java embutido; pacote de atualização (parar, trocar o `app.jar`, ligar) com cópia do banco antes e volta automática se a versão nova não subir |
+| Operação | No servidor da empresa, sobe com o Windows junto com o túnel (`servidor/SERVIDOR-INSTALAR.ps1`); backup diário, restauração por script, feriados cadastráveis |
+| Entrada de dados | Extensão do navegador que importa a OS do ERP (sem duplicar); importador do Google Sheets; gerador de dados fictícios para teste, com limpeza |
 | Documentação | README, especificação em `docs/` e guia de operação alinhados com a versão atual |
 
 ### ⚠️ Lacunas que continuam abertas
 
 | # | Lacuna | Risco se ficar como está |
 | :-- | :--- | :--- |
-| L1 | **Não há repositório remoto** | O código existe só num computador. Perdeu o disco, perdeu o projeto. |
 | L3 | **Backup fica na mesma máquina** do banco | Backup que morre junto com o servidor não é backup. |
-| L4 | **HTTP sem criptografia** | Na rede da empresa, qualquer um no mesmo Wi-Fi pode capturar senhas e tokens. |
 | L5 | Banco em produção é **H2 em arquivo** | Funciona, mas PostgreSQL é melhor para BI, backup e suporte. |
-| L6 | Sem limite de tentativas de login | Senha pode ser adivinhada por força bruta. |
 | L10 | Sem monitoramento nem alerta | O sistema pode estar fora do ar e ninguém saber até alguém reclamar. |
-| L11 | Decisões de negócio: servidor definitivo, suporte, quem vê a produtividade de quem | Sem isso, não há como planejar a virada oficial. |
+| L11 | Decisões de negócio: suporte e substituto, quem vê a produtividade de quem | Sem isso, a operação depende de uma pessoa só. |
+| L12 | *Agir como* do administrador ligado (fase de teste) | Quem tiver a senha do admin age por qualquer um; desligar ao fim da fase de teste (`PERSONIFICACAO=false`). |
 
-Resolvidas desde a primeira versão deste documento: trabalho não commitado (L2),
+Resolvidas desde a primeira versão deste documento: repositório remoto (L1 — GitHub
+privado), HTTPS (L4 — Cloudflare), limite de tentativas de login (L6), trabalho não commitado (L2),
 caminhos fixos nos scripts (L7 — agora `scripts/ambiente.ps1` acha o Java e o Maven),
 dados reais no código (L8 — planilha por parâmetro, abas de teste anonimizadas, vendedores
 vindos dos usuários) e documentação desatualizada (L9). O **histórico** do repositório ainda
@@ -78,7 +79,7 @@ casa            a diretoria      (segurança e      (2 sem.)      oficial       
 Objetivo: o código fica seguro, organizado e apresentável.
 
 - [x] Terminar ou separar o trabalho em andamento (`frontend/src/agenda/`, vitest) e commitar.
-- [ ] Criar repositório **privado** no GitHub e fazer `push` (resolve L1).
+- [x] Criar repositório **privado** no GitHub e fazer `push` (resolve L1).
 - [ ] Criar uma tag `v1.0.0` marcando a primeira versão candidata a produção.
 - [x] Tirar caminhos fixos dos scripts: procurar `java`/`mvn`/`node` pelo `PATH` ou por
       `JAVA_HOME`, e só cair num caminho conhecido como última opção (L7). A documentação já
@@ -96,8 +97,8 @@ Estas decisões não são técnicas; são do negócio. Levar as opções já ana
 
 | Decisão | Opções | Recomendação |
 | :--- | :--- | :--- |
-| **Onde o sistema roda** | (a) Um computador/servidor na empresa · (b) Nuvem (VPS ~R$ 30–80/mês) | **(a) para começar**: custo zero, os scripts já foram feitos para Windows, e o uso é dentro da empresa. Migrar para nuvem depois é possível. |
-| **Acesso de fora da empresa** | Só rede interna · Também pela internet (celular da frota, vendedor em visita) | Só rede interna no piloto. Acesso externo exige HTTPS público e mais cuidados — fica para depois. |
+| **Onde o sistema roda** | (a) Um computador/servidor na empresa · (b) Nuvem (VPS ~R$ 30–80/mês) | ✅ **Decidido: (a)**, o servidor da empresa — custo zero, os scripts já eram para Windows. Migrar para nuvem depois é possível. |
+| **Acesso de fora da empresa** | Só rede interna · Também pela internet (celular da frota, vendedor em visita) | ✅ **Decidido: pela internet**, com o Cloudflare Tunnel no domínio `rastros.cloud` (HTTPS, sem porta aberta, sem IP fixo). |
 | **Quem dá suporte** | Você · TI da empresa · fornecedor | Definir um responsável principal e um substituto. |
 | **Visibilidade da produtividade** | Quem pode ver os números de cada adesivador | Hoje: Vendedor, Diretoria e Admin. Confirmar e **comunicar aos funcionários** (LGPD: transparência sobre dados de desempenho). |
 | **Data da virada** | — | Escolher uma semana de movimento normal, nunca véspera de feriado ou pico. |
@@ -109,20 +110,20 @@ Estas decisões não são técnicas; são do negócio. Levar as opções já ana
 Objetivo: o sistema aguenta o dia a dia real e acidentes.
 
 **Infraestrutura**
-- [ ] Preparar a máquina servidora: Windows atualizado, IP fixo na rede, nobreak se possível,
-      sem uso pessoal (não é o computador de alguém).
+- [x] Preparar a máquina servidora: o servidor da empresa, sem uso pessoal (nobreak se possível).
 - [ ] Instalar PostgreSQL e apontar o sistema para ele (L5). Os testes já comprovam que
       funciona; é configuração via `DB_URL` / `DB_USER` / `DB_PASSWORD`.
 - [ ] Guardar as variáveis de produção (`DB_PASSWORD`, `JWT_SECRET`) fora do código.
 
 **Segurança**
-- [ ] HTTPS na rede interna (L4). Caminho mais simples: um proxy como o **Caddy** na frente
-      do sistema, com certificado interno. Os navegadores precisam confiar no certificado.
-- [ ] Limitar tentativas de login por usuário/IP (L6).
+- [x] HTTPS (L4): o Cloudflare Tunnel publica o sistema com o certificado do Cloudflare.
+- [x] Limitar tentativas de login por usuário/IP (L6), com o IP real vindo do Cloudflare.
+- [ ] Opcional: Cloudflare Access (código por e-mail antes de abrir o sistema), com liberação
+      de `/api/` para a extensão do ERP.
 - [ ] Guardar o token de forma menos exposta ou reduzir o tempo de expiração (hoje 12h em
       `localStorage`) — avaliar junto com o HTTPS.
 - [ ] Criar os usuários reais (todos começam com senha provisória, que já é obrigatória trocar).
-- [ ] Confirmar que `CARGA_DEMO=false` e `H2_CONSOLE=false` em produção.
+- [x] Confirmar que `CARGA_DEMO=false` e `H2_CONSOLE=false` em produção (`servidor/SERVIDOR-INICIAR.cmd`).
 
 **Confiabilidade**
 - [ ] Backup **fora da máquina** (L3): copiar o backup diário para um NAS, outro computador
@@ -131,8 +132,8 @@ Objetivo: o sistema aguenta o dia a dia real e acidentes.
       Backup nunca testado não conta.
 - [ ] Monitoramento simples (L10): um serviço gratuito que acessa `/api/health` a cada
       minuto e avisa por e-mail/WhatsApp se cair. Rotação dos logs para não encher o disco.
-- [ ] Escrever o **runbook** (`docs/10-runbook.md`): como reiniciar, onde ficam os logs, como
-      restaurar backup, como publicar uma versão nova, quem chamar.
+- [x] Escrever o **runbook**: `servidor/SERVIDOR-LEIA-ME.txt` (instalar, túnel, reiniciar, logs,
+      atualizar, problemas comuns). Falta só "quem chamar".
 
 **Critério de saída:** simulação de desastre concluída — desligar o servidor no meio do
 uso, religar e confirmar que voltou sozinho; restaurar o backup de ontem em outra máquina.
@@ -173,10 +174,7 @@ participantes preferindo o sistema à planilha.
 - Revisão mensal: backups conferidos, disco, atualizações de segurança de Java e Windows.
 
 **Evoluir** (do roadmap de produto, após estabilizar)
-- Integração com o ERP para trazer o número da OS automaticamente.
 - Dashboards de BI (Metabase/Power BI) lendo o PostgreSQL.
-- Acesso pelo celular **fora** da empresa (dentro da rede já funciona; de fora exige
-  hospedagem com HTTPS público).
 - Motivos padronizados para pausas longas.
 
 ---
@@ -204,15 +202,15 @@ setores, substitui a planilha da agenda com vínculo direto à OS e calcula a pr
 semanal — tudo com controle de acesso por perfil e histórico que não pode ser apagado.
 
 **Onde estamos.** As funcionalidades estão prontas, testadas e em uso na empresa desde
-21/09/2026. Falta a parte de operação: servidor definitivo, segurança da rede e backup externo.
+21/09/2026, no servidor da empresa e acessíveis pela internet com HTTPS. Falta o backup fora
+do servidor e o monitoramento com alerta.
 
-**Custo.** Software 100% gratuito (Kotlin, Spring, React, PostgreSQL). Rodando num
-computador da empresa, o custo de infraestrutura é praticamente zero; em nuvem, de R$ 30 a
-R$ 80 por mês.
+**Custo.** Software 100% gratuito (Kotlin, Spring, React, PostgreSQL) e Cloudflare no plano
+gratuito. O único custo é o domínio `rastros.cloud`; o servidor é o da empresa.
 
 **O que é preciso da diretoria.**
-1. Aprovar onde o sistema vai rodar (recomendação: servidor interno).
-2. Indicar um computador dedicado e um responsável substituto.
+1. ~~Aprovar onde o sistema vai rodar~~ — no servidor da empresa, publicado pela internet.
+2. Indicar um responsável substituto.
 3. Escolher os participantes e a data do piloto.
 4. Patrocinar a mudança junto à equipe na virada.
 

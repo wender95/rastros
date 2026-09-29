@@ -21,18 +21,25 @@
 
 ### Fase 4 — Operação
 - Um único `.jar`; sobe com o Windows; backup diário e antes de cada migração; restauração.
-- Migrações Flyway (V1–V11); PostgreSQL comprovado em teste.
+- Migrações Flyway (V1–V20); PostgreSQL comprovado em teste.
 - Uso no celular: telas responsivas, *Minha agenda* do adesivador, app instalável.
-- A Frota trabalha só pela própria agenda; a agenda acompanha a Frota sozinha.
+- A Frota trabalha só pela própria agenda; a agenda acompanha a Frota sozinha; o painel é um
+  reflexo da agenda do dia.
+- Usuário em mais de um setor (escolhe em qual está; a Frota dá a *Minha agenda*).
+
+### Fase 5 — No ar e integrado
+- Na internet pelo Cloudflare Tunnel, no domínio próprio `rastros.cloud` (um subdomínio por
+  empresa), com HTTPS e sem porta aberta; freio contra adivinhar senha.
+- Extensão do navegador que importa a OS do ERP (número, cliente, serviço), sem duplicar.
+- Instalação e atualização no servidor com dois cliques, cópia do banco e volta automática.
 
 ## Próximos passos
 
 Em ordem de valor para a operação:
 
-1. **Confiabilidade** — repositório remoto, backup fora da máquina, monitoramento
+1. **Confiabilidade** — backup fora do servidor e monitoramento com alerta
    (detalhes em [09 — Caminho para produção](./09-caminho-para-producao.md)).
-2. **Segurança** — HTTPS na rede interna e limite de tentativas de login.
-3. **Integração com o ERP** — trazer o número e o cliente da OS sem digitação.
-4. **Notificações** — avisar o adesivador quando o material do carro dele fica pronto.
-5. **Motivos padronizados** para devoluções, para medir retrabalho por causa.
-6. **Relatórios exportáveis** (planilha/PDF) do mês, para a folha de pontos.
+2. **Segurança** — desligar o *agir como* ao fim da fase de teste; avaliar o Cloudflare Access.
+3. **Notificações** — avisar o adesivador quando o material do carro dele fica pronto.
+4. **Motivos padronizados** para devoluções, para medir retrabalho por causa.
+5. **Relatórios exportáveis** (planilha/PDF) do mês, para a folha de pontos.

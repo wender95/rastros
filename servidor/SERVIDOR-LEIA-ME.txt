@@ -1,0 +1,159 @@
+RASTROS NO SERVIDOR DA EMPRESA, NA INTERNET (CLOUDFLARE TUNNEL)
+========================================================================
+
+O que fica pronto no fim: o sistema roda no servidor, sobe sozinho com o Windows, e
+qualquer pessoa autorizada abre pelo navegador num endereco como
+    https://empresa.rastros.cloud
+de qualquer lugar - sem abrir porta no roteador e sem IP fixo. O Cloudflare cuida do
+HTTPS (cadeado).
+
+Tempo estimado: uns 30 minutos, a maior parte no painel do Cloudflare.
+
+
+ANTES DE COMECAR
+- O dominio: rastros.cloud (comprado para o sistema).
+- Uma conta no Cloudflare (a gratuita serve): https://dash.cloudflare.com
+- O login do site onde o dominio foi comprado (para trocar os "nameservers").
+- Acesso de administrador no servidor (Windows 10/11 ou Windows Server).
+
+
+0. COLOCAR O DOMINIO NO CLOUDFLARE (uma vez so; pode fazer antes de tudo)
+   a) https://dash.cloudflare.com > "Add a domain" (ou "Onboard a domain").
+      Digite  rastros.cloud  > deixe "Quick scan for DNS records" > Continue.
+   b) Plano: Free (US$ 0) > Continue.
+   c) Ele mostra os registros de DNS que achou. Dominio novo costuma vir vazio ou com um
+      registro de "pagina estacionada" do site onde foi comprado: pode apagar esses.
+      Continue to activation.
+   d) Ele mostra DOIS nameservers do Cloudflare, parecidos com:
+         ada.ns.cloudflare.com
+         bob.ns.cloudflare.com
+      (os seus serao outros nomes - copie os que aparecerem na SUA tela).
+   e) No site onde comprou o dominio, abra o rastros.cloud e procure "Nameservers",
+      "Servidores DNS" ou "DNS personalizado". Troque os que estao la pelos DOIS do
+      Cloudflare e salve. Exemplos:
+         Hostinger:  Dominios > rastros.cloud > DNS / Nameservers > Alterar nameservers
+         GoDaddy:    Meus produtos > DNS > Servidores de nomes > Alterar > usar os meus
+         Namecheap:  Domain List > Manage > Nameservers > Custom DNS
+      Se o site tiver DNSSEC ligado para o dominio, DESLIGUE antes de trocar (senao o
+      dominio para de funcionar ate isso ser corrigido).
+   f) Volte no Cloudflare e clique em "Check nameservers". A ativacao leva de minutos a
+      algumas horas; chega um e-mail do Cloudflare quando o rastros.cloud fica "Active".
+   g) Depois de ativo, ligue o HTTPS obrigatorio: no painel do rastros.cloud,
+      SSL/TLS > Edge Certificates > "Always Use HTTPS" = ligado.
+
+
+1. COPIAR PARA O SERVIDOR
+   Descompacte o pacote num lugar fixo do servidor, por exemplo  C:\RastrOS
+   (evite Area de Trabalho e pastas sincronizadas com OneDrive).
+
+
+2. O BANCO
+   O pacote RastrOS-servidor ja traz  data\rastros.mv.db : um banco LIMPO - sem OS,
+   sem agenda, sem historico - so com o usuario  admin  (a mesma senha de hoje) e a
+   configuracao: setores, caminho das OS entre setores, feriados e as colunas da agenda.
+   Nao copie outro banco por cima.
+   (Com o pacote portatil, que nao traz banco, o servidor cria um banco novo so com o
+   admin e uma senha provisoria - o passo 3 mostra essa senha.)
+
+
+3. LIGAR O SISTEMA NO SERVIDOR
+   Abra o PowerShell COMO ADMINISTRADOR (botao direito no menu Iniciar > Terminal
+   (Administrador)) e rode:
+       cd C:\RastrOS
+       Set-ExecutionPolicy -Scope Process Bypass -Force
+       .\SERVIDOR-INSTALAR.ps1
+   Ele registra o sistema para subir com o Windows e liga. Teste no proprio servidor:
+       http://localhost:8080
+   Entre com  admin  e a sua senha. Se a senha do admin for fraca, troque AGORA
+   (Trocar senha, no topo): logo o sistema vai estar na internet.
+
+   Cadastre o pessoal em Administracao > Usuarios. Adesivador: use o mesmo nome da coluna
+   da agenda (a coluna LUCAS e do usuario Lucas), que a Minha agenda dele aparece
+   sozinha.
+
+
+4. CRIAR O TUNEL NO CLOUDFLARE (no navegador)
+   (So depois do passo 0: o rastros.cloud precisa estar "Active".)
+   a) https://one.dash.cloudflare.com  (Zero Trust). Na primeira vez ele pede um nome
+      para a equipe (ex.: rastros) e o plano: escolha o gratuito (Free). Ele pode pedir
+      um cartao para confirmar a conta mesmo no plano gratuito - nao cobra nada.
+   b) Networks > Tunnels > Create a tunnel > escolha "Cloudflared" > Next.
+   c) Nome do tunel: empresa > Save tunnel.
+   d) Em "Choose your environment", clique em Windows. Aparece um comando assim:
+         cloudflared.exe service install eyJhIjoi...(texto bem longo)
+      Copie SO o texto longo depois de "service install" - esse e o TOKEN.
+      (Nao rode o comando dele: o nosso script faz isso.) Clique em Next.
+   e) Em "Public Hostname" (ou "Published application routes"), preencha:
+         Subdomain:  empresa    (o endereco fica empresa.rastros.cloud)
+         Domain:     rastros.cloud   (escolha na lista)
+         Path:       (vazio)
+         Type:       HTTP
+         URL:        localhost:8080
+      Save tunnel.
+   f) De volta no servidor, no mesmo PowerShell de administrador:
+         .\SERVIDOR-INSTALAR.ps1 -TokenCloudflare COLE-O-TOKEN-AQUI
+      Se o cloudflared nao estiver instalado, o script tenta instalar sozinho (winget).
+      Se nao conseguir, baixe o instalador do cloudflared para Windows no site do
+      Cloudflare (developers.cloudflare.com > cloudflared > Downloads), instale e rode de
+      novo o comando acima.
+   g) No painel, a lista de Tunnels mostra "empresa" como HEALTHY em poucos segundos.
+   h) Abra https://empresa.rastros.cloud no celular (fora do Wi-Fi da empresa) para
+      conferir que abre de fora.
+
+
+5. FASE DE TESTE: O ADMIN "AGINDO COMO" OUTRA PESSOA
+   Com o admin, a barra do topo tem "Agir como...": escolha a pessoa e o sistema passa a
+   mostrar as telas dela (o setor, a Minha agenda); tudo o que for feito fica em nome
+   dela. Uma faixa laranja avisa o tempo todo; "Voltar para o admin" encerra.
+   QUANDO O TESTE ACABAR, desligue: abra SERVIDOR-INICIAR.cmd no Bloco de Notas, troque
+       set PERSONIFICACAO=true   por   set PERSONIFICACAO=false
+   salve e rode  .\SERVIDOR-INSTALAR.ps1 -Reiniciar
+
+
+SEGURANCA - O QUE JA ESTA FEITO E O QUE E RECOMENDADO
+- HTTPS pelo Cloudflare; o sistema nao fica exposto direto (nenhuma porta aberta).
+- Senha errada 5 vezes seguidas no mesmo usuario (ou 20 do mesmo endereco) fecha o login
+  por 15 minutos.
+- Senha forte no admin (enquanto o "agir como" estiver ligado, quem tem a senha do admin
+  age como qualquer um). Cada pessoa com o proprio usuario; ninguem usando o do outro.
+- Opcional, mais fechado: Cloudflare Access (Zero Trust > Access > Applications) pedindo
+  um codigo por e-mail antes de mostrar o sistema. Atencao: com o Access ligado, a
+  extensao do ERP precisa de uma regra de liberacao (Bypass) para o caminho /api/ - senao
+  ela para de enviar OS.
+
+
+DIA A DIA
+- Atualizar a versao: copie o app.jar novo por cima do antigo e rode
+      .\SERVIDOR-INSTALAR.ps1 -Reiniciar
+  NUNCA copie a pasta data de outro lugar por cima: e o banco de producao.
+- Backups automaticos: pasta backups\ (todo dia util). Copie de vez em quando para fora do
+  servidor (outro disco, nuvem).
+- Log do sistema: logs\rastros.log
+- O servidor precisa ficar ligado (e sem hibernar) para o sistema ficar no ar.
+- Previsao do tempo do painel: cidade no SERVIDOR-INICIAR.cmd (CLIMA_CIDADE,
+  CLIMA_LATITUDE, CLIMA_LONGITUDE). Trocou? Rode -Reiniciar.
+- Na rede da empresa tambem funciona http://NOME-DO-SERVIDOR:8080 se liberar a porta 8080
+  no firewall do servidor (LIBERAR-NA-REDE.bat como administrador). De fora, so pelo
+  endereco do Cloudflare.
+- Tirar tudo do ar: .\SERVIDOR-INSTALAR.ps1 -Remover  e, para o tunel,
+  cloudflared service uninstall  (os dados ficam em data\).
+
+
+PROBLEMAS
+- "a execucao de scripts foi desabilitada": rode antes  Set-ExecutionPolicy -Scope Process Bypass -Force
+- O rastros.cloud nao fica "Active" no Cloudflare depois de 24 h: confira no site onde
+  comprou se os DOIS nameservers estao exatamente como o Cloudflare mostrou, e se o
+  DNSSEC esta desligado la. No servidor, este comando mostra os nameservers que valem:
+      nslookup -type=ns rastros.cloud 1.1.1.1
+- No passo 4e o rastros.cloud nao aparece na lista de dominios: ele ainda nao esta
+  "Active" (passo 0).
+- "An A, AAAA, or CNAME record with that host already exists" ao salvar o Public
+  Hostname: no painel do rastros.cloud, DNS > Records, apague o registro antigo com o
+  nome rastros.cloud (o de "pagina estacionada") e salve de novo.
+- O endereco abre, mas a tela fica EM BRANCO: falta o endereco publico na linha
+  set CORS_ORIGENS=... do SERVIDOR-INICIAR.cmd (ela precisa ter https://empresa.rastros.cloud).
+  Corrija e rode -Reiniciar.
+- O endereco do Cloudflare mostra erro 502/1033: o sistema no servidor esta parado.
+  Teste http://localhost:8080 no servidor; se nao abrir, rode -Reiniciar e veja o log.
+- O tunel aparece DOWN no painel: o servico "Cloudflared agent" do Windows parou
+  (services.msc > Cloudflared agent > Iniciar).
