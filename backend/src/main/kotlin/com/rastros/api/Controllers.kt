@@ -22,18 +22,22 @@ class HealthController {
 /** Resposta da consulta por numero: [os] nulo quando a OS ainda nao esta no sistema. */
 data class OsNoSistemaResponse(val os: OsJaEnviadaResponse?)
 
-/** A empresa que usa esta instalacao do RastrOS: nome e logo no topo e no login. */
-data class EmpresaResponse(val sistema: String, val nome: String, val logo: String?)
+/**
+ * A empresa que usa esta instalacao do RastrOS: nome e logo no topo e no login, e se o
+ * "agir como" do administrador esta ligado aqui (desligado, o seletor nem aparece).
+ */
+data class EmpresaResponse(val sistema: String, val nome: String, val logo: String?, val agirComo: Boolean)
 
 @RestController
 @RequestMapping("/api/empresa")
 class EmpresaController(
     @org.springframework.beans.factory.annotation.Value("\${rastros.empresa.nome:RastrOS}") private val nome: String,
-    @org.springframework.beans.factory.annotation.Value("\${rastros.empresa.logo:/rastros-logo-branca.svg}") private val logo: String
+    @org.springframework.beans.factory.annotation.Value("\${rastros.empresa.logo:/rastros-logo-branca.svg}") private val logo: String,
+    @org.springframework.beans.factory.annotation.Value("\${rastros.personificacao.habilitada:false}") private val agirComo: Boolean
 ) {
     /** Aberto: o login mostra a empresa antes de a pessoa entrar. */
     @GetMapping
-    fun empresa() = EmpresaResponse(sistema = "RastrOS", nome = nome, logo = logo.ifBlank { null })
+    fun empresa() = EmpresaResponse(sistema = "RastrOS", nome = nome, logo = logo.ifBlank { null }, agirComo = agirComo)
 }
 
 @RestController

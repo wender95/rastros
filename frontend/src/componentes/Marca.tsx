@@ -5,9 +5,11 @@ export interface Empresa {
   sistema: string
   nome: string
   logo: string | null
+  /** O administrador pode "agir como" outra pessoa nesta instalação (fase de teste). */
+  agirComo: boolean
 }
 
-const PADRAO: Empresa = { sistema: 'RastrOS', nome: 'RastrOS', logo: '/rastros-logo-branca.svg' }
+const PADRAO: Empresa = { sistema: 'RastrOS', nome: 'RastrOS', logo: '/rastros-logo-branca.svg', agirComo: false }
 
 /** Uma busca só por carga da página: o topo, o login e o título da aba usam a mesma. */
 let pedido: Promise<Empresa> | null = null

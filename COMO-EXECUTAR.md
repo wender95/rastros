@@ -100,7 +100,7 @@ publica o endereço, com HTTPS. Os arquivos ficam em `servidor/` (e dentro do pa
 | Arquivo | Para quê |
 | :--- | :--- |
 | `SERVIDOR-INSTALAR.ps1` | registra o sistema para subir com o Windows e liga; com `-TokenCloudflare <token>` liga também o túnel; `-Reiniciar` depois de trocar o `app.jar`; `-Remover` |
-| `SERVIDOR-INICIAR.cmd` | o arranque que a tarefa usa: produção (`CARGA_DEMO=false`), "agir como" ligado na fase de teste, cidade da previsão do tempo |
+| `SERVIDOR-INICIAR.cmd` | o arranque que a tarefa usa: produção (`CARGA_DEMO=false`), "agir como" (desligado; liga na fase de teste), cidade da previsão do tempo |
 | `SERVIDOR-LEIA-ME.txt` | o passo a passo completo: copiar, trazer os dados, criar o túnel no painel do Cloudflare, desligar o "agir como" |
 
 Cuidados já no instalador: num **banco novo**, ele mostra a senha provisória do admin e
@@ -112,7 +112,8 @@ e com batida a cada 25 s, abaixo do limite de conexão parada do Cloudflare.
 
 ### Fase de teste: o administrador "agindo como" outra pessoa
 
-Com a função ligada (`PERSONIFICACAO=true`, o padrão), o **administrador** tem na barra do
+Vem **desligada** (`PERSONIFICACAO=false`, o padrão desta versão): o seletor nem aparece.
+Ligada (`PERSONIFICACAO=true`), o **administrador** tem na barra do
 topo o seletor **Agir como…**: escolhida a pessoa, o sistema recarrega nas telas dela — o
 setor (receber, devolver, despachar) ou a Minha agenda (iniciar e concluir projetos) — sem
 precisar da senha dela, nem mesmo se ela ainda estiver com a senha provisória. Uma **faixa
@@ -347,10 +348,16 @@ sistema já sobe com umas seis semanas de operação coerente, do começo ao fim
 
 * **Equipe da Frota**: 4 adesivadores, cada um com a sua coluna na agenda ligada à conta
   dele (`frota`, `lucas`, `rafael`, `tiago`), e a coluna do Noturno.
-* **Um projeto por dia para cada adesivador**, de quatro semanas atrás até duas à frente.
-  O **início e a conclusão** de cada um são registrados pelo próprio adesivador, às vezes
-  com pausa; ônibus e caminhões levam dois dias, como cópias do mesmo serviço. Hoje, cada
-  um está com o seu projeto em andamento (e um deles pausado).
+* **A agenda preenchida como o escritório preenche**, de quatro semanas atrás até duas à
+  frente: cada serviço é uma **cópia por espaço** (como a alça que replica deixa), **vários
+  serviços por dia** para cada adesivador — de 1 a 3 espaços; caminhão e ônibus passam para
+  o dia seguinte — com um espaço livre aqui e ali e, de vez em quando, um dia Indisponível
+  linha a linha. O **início e a conclusão** de cada serviço são registrados pelo próprio
+  adesivador, um depois do outro, às vezes com pausa.
+* **Hoje, para ver o painel**: cada adesivador com o que já concluiu, o que está fazendo
+  (**Agora**) e o que vem depois; um deles **pausado**, um que **começou outro sem concluir
+  o anterior** (o Agora é o último iniciado) e um caminhão que **começou ontem** e continua
+  em andamento hoje.
 * **OS no padrão do ERP**: número de 5 dígitos em ordem de abertura, cliente pela razão
   social e o serviço como a extensão lia (a campanha, ou `1x produto`). O fluxo leva o
   nome do serviço. Cada card da agenda fica ligado à OS do projeto.
@@ -456,7 +463,7 @@ No PostgreSQL o backup é do servidor de banco (`pg_dump`); a tela de backups av
 | `CARGA_DEMO` | `true` (`false` no `iniciar-producao`) | dados fictícios num banco novo |
 | `BACKUP_PASTA`, `BACKUP_MANTER`, `BACKUP_CRON` | `./backups`, `30`, `0 30 12 * * MON-FRI` | backup do H2 |
 | `H2_CONSOLE` | `false` | console web do H2 |
-| `PERSONIFICACAO` | `true` | fase de teste: o administrador pode "agir como" outro usuário |
+| `PERSONIFICACAO` | `false` | fase de teste: o administrador pode "agir como" outro usuário |
 | `CLIMA_CIDADE`, `CLIMA_LATITUDE`, `CLIMA_LONGITUDE` | São Paulo | previsão do tempo do painel |
 | `CORS_ORIGENS` | `localhost:5173` e a extensão | endereços que podem chamar o sistema pelo navegador; **no servidor público, inclua o endereço dele** (ex.: `https://rastros.cloud`), senão a tela abre em branco |
 

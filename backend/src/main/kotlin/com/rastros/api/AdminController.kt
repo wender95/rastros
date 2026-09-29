@@ -41,7 +41,7 @@ class AdminController(
     private val feriadoService: com.rastros.service.FeriadoService,
     private val jwtService: com.rastros.security.JwtService,
     private val minhaAgenda: com.rastros.service.MinhaAgendaService,
-    @org.springframework.beans.factory.annotation.Value("\${rastros.personificacao.habilitada:true}")
+    @org.springframework.beans.factory.annotation.Value("\${rastros.personificacao.habilitada:false}")
     private val personificacaoHabilitada: Boolean
 ) {
 

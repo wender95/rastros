@@ -160,7 +160,7 @@ class JwtService(
 class JwtAuthFilter(
     private val jwtService: JwtService,
     private val usuarioRepository: UsuarioRepository,
-    @Value("\${rastros.personificacao.habilitada:true}") private val personificacaoHabilitada: Boolean
+    @Value("\${rastros.personificacao.habilitada:false}") private val personificacaoHabilitada: Boolean
 ) : OncePerRequestFilter() {
 
     override fun doFilterInternal(

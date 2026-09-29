@@ -7,9 +7,9 @@ rem Producao: banco novo nasce sem dados ficticios, so com o administrador.
 set CARGA_DEMO=false
 set LOGGING_FILE_NAME=logs/rastros.log
 
-rem Fase de teste: o administrador pode "agir como" qualquer usuario, sem a senha dele.
-rem Quando o teste acabar, troque para false e rode:  .\SERVIDOR-INSTALAR.ps1 -Reiniciar
-set PERSONIFICACAO=true
+rem O administrador "agindo como" outra pessoa, sem a senha dela: so para a fase de teste.
+rem Para ligar, troque para true e rode:  .\SERVIDOR-INSTALAR.ps1 -Reiniciar
+set PERSONIFICACAO=false
 
 rem Previsao do tempo do painel: a cidade da empresa (latitude e longitude).
 set CLIMA_CIDADE=Sao Paulo

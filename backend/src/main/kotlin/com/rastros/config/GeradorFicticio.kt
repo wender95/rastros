@@ -28,10 +28,15 @@ import kotlin.random.Random
  * - **Cada OS segue o caminho certo** pela matriz: Criacao, Impressao, Recorte ou
  *   Preparacao, Frota (ou Acabamento), Patio (ou Prateleira) e Financeiro - ate onde o
  *   "agora" deixa. O que ainda nao aconteceu fica na fila certa.
- * - **Frota**: cada adesivador faz um projeto por dia (de vez em quando um de dois dias,
- *   como copias do mesmo servico). O inicio e a conclusao sao registrados por ele, com
+ * - **Frota**: a agenda preenchida como o escritorio preenche, pela alca que replica: cada
+ *   servico e uma copia por espaco (1 a 3 espacos; caminhao e onibus passam para o dia
+ *   seguinte), varios servicos por dia para cada adesivador, com um espaco livre aqui e
+ *   ali. O inicio e a conclusao sao registrados por ele, um servico depois do outro, com
  *   pausas de vez em quando; a OS e recebida na Frota quando ele inicia e vai ao Patio
  *   quando ele conclui. O card da agenda fica ligado a OS.
+ * - **Hoje, para o painel**: cada adesivador com o que ja concluiu, o que esta fazendo
+ *   ("Agora") e o que vem depois; um deles pausado, um que comecou outro sem concluir o
+ *   anterior, e um servico que comecou ontem e ainda ocupa a manha de hoje.
  *
  * Periodo: umas quatro semanas para tras e duas para a frente.
  *
@@ -115,21 +120,35 @@ class GeradorFicticio(
         var os: OrdemServico? = null
     }
 
-    /** Um projeto da agenda: um dia (ou dois) na coluna de um adesivador. */
+    /** Um dos 5 espacos do dia, como a tela da agenda os mostra. */
+    private class Espaco(
+        val dia: LocalDate,
+        val numero: Int,
+        val faixaInicio: Int,
+        val horas: BigDecimal,
+        val comeca: LocalTime,
+        val termina: LocalTime
+    )
+
+    /** Um servico da agenda: espacos seguidos na coluna de um adesivador, uma copia em cada. */
     private class Projeto(
         val coluna: Adesivador,
         val adesivador: Usuario,
-        val dias: List<LocalDate>,
+        val espacos: List<Espaco>,
         val tipo: TipoDeServico,
         val veiculo: String,
         val cliente: Cliente,
         val vendedor: Usuario,
-        val inicio: Instant,
-        val fim: Instant,
+        var inicio: Instant,
+        /** Null: iniciado e ainda nao concluido. */
+        var fim: Instant?,
         val naoVeio: Boolean,
-        val pausa: Pair<Instant, Instant?>?,
-        val plano: PlanoOs?
-    )
+        var pausa: Pair<Instant, Instant?>?
+    ) {
+        var plano: PlanoOs? = null
+    }
+
+    private class Frota(val projetos: List<Projeto>, val bloqueios: List<Pair<Adesivador, Espaco>>)
 
     @Transactional
     internal fun gerarTudo() {
@@ -152,7 +171,8 @@ class GeradorFicticio(
         reserva = ativos.firstOrNull { it.perfil.nome == PerfilNome.ADMIN } ?: error("Nenhum administrador ativo.")
         if (vendedores.isEmpty()) error("Nenhum vendedor ativo: cadastre o comercial antes de gerar.")
 
-        val projetos = planejarFrota()
+        val frota = planejarFrota()
+        val projetos = frota.projetos
         val acabamento = planejarAcabamento()
         val planos = (projetos.mapNotNull { it.plano } + acabamento).sortedBy { it.aberta }
 
@@ -164,10 +184,10 @@ class GeradorFicticio(
             numero += 1 + (if (sorte.nextInt(100) < 30) sorte.nextInt(1, 4) else 0)
             plano.os = abrirOs(numero.toString(), plano)
         }
-        val cards = gravarAgenda(projetos)
+        val cards = gravarAgenda(frota)
         log.warn(
-            "Ficticio: {} OS ({} da Frota, {} de acabamento) e {} cards na agenda de {} adesivadores.",
-            planos.size, projetos.count { it.plano != null }, acabamento.size, cards,
+            "Ficticio: {} OS ({} da Frota, {} de acabamento), {} servicos em {} cards na agenda de {} adesivadores.",
+            planos.size, projetos.count { it.plano != null }, acabamento.size, projetos.size, cards,
             projetos.map { it.coluna.id }.distinct().size
         )
     }
@@ -211,10 +231,10 @@ class GeradorFicticio(
 
     // ------------------------------------------------------------------ frota
 
-    /** O que se faz na Frota: veiculo, texto do ERP, caminho da producao e tamanho. */
+    /** O que se faz na Frota: veiculo, texto do ERP, caminho da producao e tamanho em espacos. */
     private class TipoDeServico(
         val peso: Int,
-        val dias: Int,
+        val espacos: IntRange,
         val veiculo: () -> String,
         val servicoDoErp: () -> String,
         val clientes: List<Cliente>,
@@ -227,39 +247,51 @@ class GeradorFicticio(
     private val tiposDeServico by lazy {
         listOf(
             TipoDeServico(
-                peso = 30, dias = 1,
-                veiculo = { "${listOf("SPIN", "ONIX", "COBALT", "CRONOS", "VIRTUS", "LOGAN").qualquer()} ${sorte.nextInt(100, 2999)}" },
+                peso = 26, espacos = 1..2,
+                veiculo = { "TAXI ${listOf("SPIN", "ONIX", "COBALT", "CRONOS", "VIRTUS", "LOGAN").qualquer()} ${sorte.nextInt(100, 2999)}" },
                 servicoDoErp = { "FROTA TAXI $ano - ADESIVACAO COMPLETA" },
-                clientes = cooperativas, rota = listOf(SetorNome.CRIACAO, SetorNome.IMPRESSAO, SetorNome.RECORTE), score = 7.0
+                clientes = cooperativas, rota = listOf(SetorNome.CRIACAO, SetorNome.IMPRESSAO, SetorNome.RECORTE), score = 3.0
             ),
             TipoDeServico(
-                peso = 20, dias = 1,
+                peso = 10, espacos = 1..1,
+                veiculo = { "REPARO TAXI ${sorte.nextInt(100, 2999)}" },
+                servicoDoErp = { listOf("1x REPARO ADESIVO PORTA", "1x TROCA FAIXA LATERAL").qualquer() },
+                clientes = cooperativas, rota = listOf(SetorNome.CRIACAO, SetorNome.IMPRESSAO), score = 1.0
+            ),
+            TipoDeServico(
+                peso = 16, espacos = 2..3,
                 veiculo = { listOf("SPRINTER", "MASTER", "DUCATO", "DAILY", "TRANSIT", "EXPERT").qualquer() },
                 servicoDoErp = { listOf("1x ADESIVACAO VAN LATERAIS E TRASEIRA", "CAMPANHA: FROTA DE ENTREGAS $ano").qualquer() },
                 clientes = transportadoras + empresas, rota = listOf(SetorNome.CRIACAO, SetorNome.IMPRESSAO, SetorNome.RECORTE),
                 score = 5.0
             ),
             TipoDeServico(
-                peso = 15, dias = 1,
+                peso = 14, espacos = 1..2,
                 veiculo = { listOf("HILUX", "S10", "STRADA", "TORO", "SAVEIRO", "RANGER").qualquer() },
                 servicoDoErp = { listOf("1x ADESIVACAO PORTAS E CACAMBA", "1x PLOTAGEM LOGO + TELEFONE").qualquer() },
-                clientes = empresas, rota = listOf(SetorNome.CRIACAO, SetorNome.IMPRESSAO), score = 3.0
+                clientes = empresas, rota = listOf(SetorNome.CRIACAO, SetorNome.IMPRESSAO), score = 2.5
             ),
             TipoDeServico(
-                peso = 20, dias = 1,
-                veiculo = { listOf("KICKS", "COMPASS", "T-CROSS", "HB20", "ARGO", "FIORINO", "KANGOO").qualquer() },
+                peso = 14, espacos = 2..4,
+                veiculo = { listOf("KICKS", "COMPASS", "T-CROSS", "HB20", "ARGO", "FIORINO", "KANGOO", "BYD DOLPHIN").qualquer() },
                 servicoDoErp = { listOf("1x ENVELOPAMENTO TOTAL VEICULO", "1x ADESIVACAO VEICULO COMPLETA").qualquer() },
-                clientes = empresas, rota = listOf(SetorNome.CRIACAO, SetorNome.IMPRESSAO, SetorNome.RECORTE), score = 4.0
+                clientes = empresas, rota = listOf(SetorNome.CRIACAO, SetorNome.IMPRESSAO, SetorNome.RECORTE), score = 5.0
             ),
             TipoDeServico(
-                peso = 9, dias = 2,
+                peso = 6, espacos = 1..2,
+                veiculo = { "MOTO ${listOf("DUCATTI", "BMW GS", "HONDA CB", "TRIUMPH").qualquer()} PPF" },
+                servicoDoErp = { "1x PELICULA PPF MOTO" },
+                clientes = empresas, rota = listOf(SetorNome.CRIACAO, SetorNome.RECORTE), score = 2.0
+            ),
+            TipoDeServico(
+                peso = 3, espacos = 5..6,
                 veiculo = { listOf("CAMINHAO VW 24.280 BAU", "CAMINHAO MB ATEGO BAU", "CAMINHAO IVECO TECTOR BAU").qualquer() },
                 servicoDoErp = { "1x ENVELOPAMENTO BAU COMPLETO" },
                 clientes = transportadoras, rota = listOf(SetorNome.CRIACAO, SetorNome.IMPRESSAO, SetorNome.PREPARACAO),
                 score = 11.0
             ),
             TipoDeServico(
-                peso = 4, dias = 2,
+                peso = 1, espacos = 6..8,
                 veiculo = { "ONIBUS MARCOPOLO ${listOf("PARADISO", "VIAGGIO", "TORINO").qualquer()}" },
                 servicoDoErp = { "CAMPANHA: ENVELOPAMENTO FROTA TURISMO $ano" },
                 clientes = turismo, rota = listOf(SetorNome.CRIACAO, SetorNome.IMPRESSAO, SetorNome.PREPARACAO), score = 12.0
@@ -267,100 +299,177 @@ class GeradorFicticio(
         )
     }
 
-    private fun sortearTipo(cabemDias: Int): TipoDeServico {
-        val possiveis = tiposDeServico.filter { it.dias <= cabemDias }
-        var n = sorte.nextInt(possiveis.sumOf { it.peso })
-        for (t in possiveis) {
+    private fun sortearTipo(): TipoDeServico {
+        var n = sorte.nextInt(tiposDeServico.sumOf { it.peso })
+        for (t in tiposDeServico) {
             n -= t.peso
             if (n < 0) return t
         }
-        return possiveis.last()
+        return tiposDeServico.last()
     }
 
-    /** Cada adesivador com a sua coluna: um projeto por dia util do periodo. */
-    private fun planejarFrota(): List<Projeto> {
+    /**
+     * Os 5 espacos do dia, pela mesma conta da tela (blocos.ts): cada faixa de horario cai no
+     * espaco onde fica o meio dela. Uma copia ocupa exatamente o seu espaco.
+     */
+    private fun espacosDoDia(dia: LocalDate): List<Espaco> {
+        val uteis = FaixasDoDia.TODAS.filter { !it.almoco && !FaixasDoDia.fechadaNoDia(dia, it.indice) }
+        val porEspaco = uteis.sumOf { it.horas.toDouble() } / ESPACOS_POR_DIA
+        var acumulado = 0.0
+        val porNumero = linkedMapOf<Int, MutableList<FaixaHoraria>>()
+        for (f in uteis) {
+            val meio = acumulado + f.horas.toDouble() / 2
+            acumulado += f.horas.toDouble()
+            porNumero.getOrPut(minOf(ESPACOS_POR_DIA, (meio / porEspaco).toInt() + 1)) { mutableListOf() } += f
+        }
+        return porNumero.map { (numero, faixas) ->
+            Espaco(
+                dia, numero, faixas.first().indice, faixas.fold(BigDecimal.ZERO) { s, f -> s + f.horas },
+                LocalTime.parse(faixas.first().inicio), LocalTime.parse(faixas.last().fim)
+            )
+        }
+    }
+
+    /** O espaco em que uma faixa de horario cai (o almoco fica com o espaco de antes). */
+    private fun espacoDaFaixa(dia: LocalDate, faixa: Int): Int =
+        espacosDoDia(dia).last { it.faixaInicio <= faixa }.numero
+
+    /**
+     * Cada adesivador com a sua coluna, espaco a espaco: um servico depois do outro, varios
+     * por dia, como o escritorio preenche a agenda.
+     */
+    private fun planejarFrota(): Frota {
         val hoje = LocalDate.now(zona)
+        val ontem = voltarDiasUteis(hoje, 1)
         val inicio = voltarDiasUteis(hoje, 20)
         val fim = avancarDiasUteis(hoje, 9)
+        val dias = generateSequence(inicio) { avancarDiasUteis(it, 1) }.takeWhile { !it.isAfter(fim) }.toList()
         val colunas = adesivadorRepository.findByAtivoTrueOrderByOrdemAsc()
             .filter { it.tipo == TipoColunaAgenda.ADESIVADOR }
             .mapNotNull { coluna -> adesivadorDa(coluna)?.let { coluna to it } }
         val projetos = mutableListOf<Projeto>()
-        // Uma pausa em aberto agora, para o painel mostrar como fica.
-        var pausaEmAbertoFeita = false
+        val bloqueios = mutableListOf<Pair<Adesivador, Espaco>>()
 
-        for ((coluna, adesivador) in colunas) {
-            // Dias com card de verdade (lancado por alguem) ficam de fora: o gerador contorna.
+        colunas.forEachIndexed { n, (coluna, adesivador) ->
+            // Espacos com card de verdade (lancado por alguem) ficam de fora: o gerador contorna.
             val ocupados = agendamentoRepository
                 .doPeriodoDoAdesivador(inicio.minusWeeks(4), fim.plusWeeks(4), coluna.id!!)
-                .flatMap { a -> a.posicoesOcupadas.map { FaixasDoDia.diaUtilAFrente(a.data, it / FaixasDoDia.QUANTIDADE) } }
+                .flatMap { a ->
+                    a.posicoesOcupadas.map { p ->
+                        val dia = FaixasDoDia.diaUtilAFrente(a.data, p / FaixasDoDia.QUANTIDADE)
+                        dia to espacoDaFaixa(dia, p % FaixasDoDia.QUANTIDADE + 1)
+                    }
+                }
                 .toSet()
-            var dia = inicio
-            while (!dia.isAfter(fim)) {
-                if (dia in ocupados) {
-                    dia = avancarDiasUteis(dia, 1)
-                    continue
-                }
-                // De vez em quando o adesivador nao vem (folga, atestado): o dia fica bloqueado.
-                if (dia != hoje && sorte.nextInt(100) < 3) {
-                    projetos += bloqueio(coluna, adesivador, dia)
-                    dia = avancarDiasUteis(dia, 1)
-                    continue
-                }
-                val proximo = avancarDiasUteis(dia, 1)
-                // Servico de dois dias: copias do mesmo servico, como o escritorio estende o card.
-                val cabemDias = if (!proximo.isAfter(fim) && proximo !in ocupados) 2 else 1
-                val tipo = sortearTipo(cabemDias)
-                val dias = if (tipo.dias == 2) listOf(dia, proximo) else listOf(dia)
-                val cliente = tipo.clientes.qualquer()
-                val vendedor = vendedores.qualquer()
+            // De vez em quando o adesivador nao vem (folga, atestado): o dia fica indisponivel, linha a linha.
+            val folgas = dias.filter { it != hoje && it != ontem && sorte.nextInt(100) < 3 }.toSet()
+            val espacos = dias.flatMap { espacosDoDia(it) }
+            espacos.filter { it.dia in folgas && (it.dia to it.numero) !in ocupados }.forEach { bloqueios += coluna to it }
+            val livre = { e: Espaco -> e.dia !in folgas && (e.dia to e.numero) !in ocupados }
 
-                val comeca = dias.first().atTime(7, 30).plusMinutes(sorte.nextLong(4, 40)).atZone(zona).toInstant()
-                val ultimo = dias.last()
-                val saida = if (ultimo.dayOfWeek == DayOfWeek.FRIDAY) LocalTime.of(15, 45) else LocalTime.of(16, 5)
-                val termina = ultimo.atTime(saida).plusMinutes(sorte.nextLong(0, 70)).atZone(zona).toInstant()
+            // Na quarta coluna, um caminhao que comecou ontem a tarde e ocupa o dia de hoje inteiro.
+            val longoDeOntem = if (n == 3) espacos.indexOfFirst { it.dia == ontem && it.numero == 4 } else -1
+            val daColuna = mutableListOf<Projeto>()
+            var livreDesde = Instant.EPOCH
+            var i = 0
+            while (i < espacos.size) {
+                if (!livre(espacos[i])) { i++; continue }
+                val forcado = i == longoDeOntem
+                // Um espaco vazio aqui e ali: a agenda de verdade nao e cheia de ponta a ponta.
+                // Hoje nao: o painel tem de ter sempre o que mostrar.
+                if (!forcado && espacos[i].dia != hoje && sorte.nextInt(100) < 7) { i++; continue }
+                val tipo = if (forcado) tiposDeServico.first { it.espacos.first == 5 } else sortearTipo()
+                var quer = if (forcado) 7 else sorte.nextInt(tipo.espacos.first, tipo.espacos.last + 1)
+                if (longoDeOntem > i && longoDeOntem < i + quer) quer = longoDeOntem - i
+                // Hoje, servicos curtos (1 ou 2 espacos): o painel mostra o que ja foi, o de agora e o que vem.
+                if (!forcado && (0 until quer).any { espacos.getOrNull(i + it)?.dia == hoje }) quer = minOf(quer, 2)
+                var tamanho = 0
+                while (tamanho < quer && i + tamanho < espacos.size && livre(espacos[i + tamanho])) tamanho++
+                val meus = espacos.subList(i, i + tamanho).toList()
+                i += tamanho
+
+                // Um servico depois do outro: comeca no espaco dele, nunca antes do anterior acabar.
+                val primeiro = meus.first()
+                val ultimo = meus.last()
+                val comeca = maxOf(
+                    primeiro.dia.atTime(primeiro.comeca).plusMinutes(sorte.nextLong(0, 20)).atZone(zona).toInstant(),
+                    livreDesde.plus(sorte.nextLong(3, 12), ChronoUnit.MINUTES)
+                )
+                val termina = maxOf(
+                    ultimo.dia.atTime(ultimo.termina).plusMinutes(sorte.nextLong(-25, 15)).atZone(zona).toInstant(),
+                    comeca.plus(35, ChronoUnit.MINUTES)
+                )
+                livreDesde = termina
 
                 // O carro que nao veio: so no passado, e sem OS andando.
-                val naoVeio = termina.isBefore(agora) && tipo.dias == 1 && sorte.nextInt(100) < 3
-                val pausa = when {
-                    naoVeio -> null
-                    // Hoje, em andamento: um deles esta pausado agora.
-                    !pausaEmAbertoFeita && dias.contains(hoje) && comeca.isBefore(agora.minus(90, ChronoUnit.MINUTES)) &&
-                        termina.isAfter(agora) -> {
-                        pausaEmAbertoFeita = true
-                        agora.minus(sorte.nextLong(12, 40), ChronoUnit.MINUTES) to null
-                    }
-                    sorte.nextInt(100) < 18 -> {
-                        val p = dias.first().atTime(10, 0).plusMinutes(sorte.nextLong(0, 240)).atZone(zona).toInstant()
-                        val volta = p.plus(sorte.nextLong(20, 75), ChronoUnit.MINUTES)
-                        if (volta.isBefore(agora) && p.isAfter(comeca) && volta.isBefore(termina)) p to volta else null
-                    }
-                    else -> null
-                }
-                val plano = if (naoVeio) null else planoDaFrota(tipo, cliente, vendedor, adesivador, comeca, termina)
-                projetos += Projeto(
-                    coluna, adesivador, dias, tipo, tipo.veiculo(), cliente, vendedor, comeca, termina, naoVeio, pausa, plano
+                val umDiaSo = meus.all { it.dia == primeiro.dia }
+                val naoVeio = !forcado && termina.isBefore(agora) && umDiaSo && sorte.nextInt(100) < 3
+                val minutos = ChronoUnit.MINUTES.between(comeca, termina)
+                val pausa = if (!naoVeio && umDiaSo && minutos >= 90 && sorte.nextInt(100) < 15) {
+                    val p = comeca.plus(sorte.nextLong(20, minutos - 60), ChronoUnit.MINUTES)
+                    val volta = p.plus(sorte.nextLong(15, 45), ChronoUnit.MINUTES)
+                    if (volta.isBefore(agora)) p to volta else null
+                } else null
+                daColuna += Projeto(
+                    coluna, adesivador, meus, tipo, tipo.veiculo(), tipo.clientes.qualquer(), vendedores.qualquer(),
+                    comeca, termina, naoVeio, pausa
                 )
-                dia = avancarDiasUteis(dias.last(), 1)
             }
-        }
-        return projetos
-    }
 
-    /** Folga ou atestado: a coluna fica indisponivel o dia todo. */
-    private fun bloqueio(coluna: Adesivador, adesivador: Usuario, dia: LocalDate) = Projeto(
-        coluna, adesivador, listOf(dia), tiposDeServico.first(), listOf("FOLGA", "ATESTADO", "CURSO").qualquer(),
-        empresas.first(), vendedores.first(), Instant.EPOCH, Instant.EPOCH, naoVeio = false, pausa = null, plano = null
-    )
+            // Hoje, o que o painel tem de mostrar. O servico do espaco de agora esta em andamento
+            // (o registro real nunca bate com a grade ao minuto) e o anterior ja acabou.
+            val atual = daColuna.firstOrNull { p ->
+                val de = p.espacos.first().let { it.dia.atTime(it.comeca).atZone(zona).toInstant() }
+                val ate = p.espacos.last().let { it.dia.atTime(it.termina).atZone(zona).toInstant() }
+                !p.naoVeio && !de.isAfter(agora) && ate.isAfter(agora)
+            }
+            if (atual != null) {
+                val anterior = daColuna.getOrNull(daColuna.indexOf(atual) - 1)?.takeUnless { it.naoVeio }
+                if (anterior != null && anterior.fim!!.isAfter(agora.minus(5, ChronoUnit.MINUTES))) {
+                    anterior.fim = maxOf(agora.minus(sorte.nextLong(8, 15), ChronoUnit.MINUTES), anterior.inicio.plus(10, ChronoUnit.MINUTES))
+                    if (anterior.pausa?.second?.isAfter(anterior.fim) == true) anterior.pausa = null
+                }
+                if (atual.inicio.isAfter(agora.minus(5, ChronoUnit.MINUTES))) {
+                    val depoisDoAnterior = (anterior?.fim ?: Instant.EPOCH).plus(3, ChronoUnit.MINUTES)
+                    atual.inicio = minOf(maxOf(depoisDoAnterior, agora.minus(sorte.nextLong(10, 30), ChronoUnit.MINUTES)), agora.minus(2, ChronoUnit.MINUTES))
+                }
+                if (!atual.fim!!.isAfter(agora)) atual.fim = agora.plus(sorte.nextLong(20, 90), ChronoUnit.MINUTES)
+                if (atual.pausa?.second?.isAfter(agora) == true || atual.pausa?.first?.isBefore(atual.inicio) == true) atual.pausa = null
+            }
+            when {
+                // Na segunda coluna, pausado agora (o painel mostra a pausa, sem "Agora").
+                n == 1 && atual != null && ChronoUnit.MINUTES.between(atual.inicio, agora) >= 4 -> {
+                    atual.pausa = atual.inicio.plus(ChronoUnit.MINUTES.between(atual.inicio, agora) * 55 / 100, ChronoUnit.MINUTES) to null
+                }
+                // Na terceira, comecou este sem concluir o anterior: o "Agora" e o ultimo iniciado,
+                // e o anterior volta para a lista, ainda em andamento.
+                n == 2 && atual != null -> {
+                    daColuna.lastOrNull {
+                        it !== atual && !it.naoVeio && it.fim!!.isBefore(atual.inicio) &&
+                            it.espacos.last().dia == hoje
+                    }?.let { anterior ->
+                        anterior.fim = null
+                        if (anterior.pausa?.second?.isAfter(atual.inicio) == true) anterior.pausa = null
+                    }
+                }
+            }
+            projetos += daColuna
+        }
+
+        projetos.filterNot { it.naoVeio }.forEach {
+            it.plano = planoDaFrota(it.tipo, it.cliente, it.vendedor, it.adesivador, it.inicio, it.fim)
+        }
+        return Frota(projetos, bloqueios)
+    }
 
     /**
      * A OS por tras do projeto: aberta dias antes pelo vendedor, passa pela producao e
      * espera na Frota; o adesivador a recebe quando inicia e a manda ao Patio quando
      * conclui; o comercial libera, e o Financeiro recebe e conclui. Projeto muito a frente
-     * ainda nao tem OS.
+     * ainda nao tem OS; projeto ainda nao concluido deixa a OS na Frota.
      */
     private fun planoDaFrota(
-        tipo: TipoDeServico, cliente: Cliente, vendedor: Usuario, adesivador: Usuario, comeca: Instant, termina: Instant
+        tipo: TipoDeServico, cliente: Cliente, vendedor: Usuario, adesivador: Usuario, comeca: Instant, termina: Instant?
     ): PlanoOs? {
         val aberta = voltarDiasUteis(comeca, tipo.rota.size + sorte.nextInt(1, 4), sorte.nextInt(8, 17))
         if (aberta.isAfter(agora)) return null
@@ -377,9 +486,13 @@ class GeradorFicticio(
             passos += Passo.Despachar(setor, if (i == tipo.rota.lastIndex) SetorNome.FROTA else tipo.rota[i + 1], operador(setor), t)
         }
         // Na Frota quem recebe e despacha e o adesivador, ao iniciar e ao concluir o projeto.
-        passos += Passo.Receber(SetorNome.FROTA, adesivador, comeca.coerceAtLeast(t.plusSeconds(60)))
-        passos += Passo.Despachar(SetorNome.FROTA, SetorNome.PATIO, adesivador, termina)
-        fecharNoFinanceiro(passos, SetorNome.PATIO, vendedor, termina)
+        val recebe = comeca.coerceAtLeast(t.plusSeconds(60))
+        passos += Passo.Receber(SetorNome.FROTA, adesivador, recebe)
+        if (termina != null) {
+            val conclui = termina.coerceAtLeast(recebe.plusSeconds(60))
+            passos += Passo.Despachar(SetorNome.FROTA, SetorNome.PATIO, adesivador, conclui)
+            fecharNoFinanceiro(passos, SetorNome.PATIO, vendedor, conclui)
+        }
         return PlanoOs(aberta, cliente, tipo.servicoDoErp(), vendedor, passos)
     }
 
@@ -401,16 +514,27 @@ class GeradorFicticio(
     /** Placas, banners e adesivos: vao para a Prateleira e dali para o Financeiro. */
     private fun planejarAcabamento(): List<PlanoOs> {
         val desde = voltarDiasUteis(LocalDate.now(zona), 20).atTime(8, 0).atZone(zona).toInstant()
+        val ontemCedo = voltarDiasUteis(LocalDate.now(zona), 1).atTime(8, 30).atZone(zona).toInstant()
         return (1..32).map { i ->
             val vendedor = vendedores.qualquer()
-            val aberta = somarHorasUteis(desde, sorte.nextDouble(0.0, 20 * 10.0)).coerceAtMost(agora.minus(40, ChronoUnit.MINUTES))
+            // As ultimas abriram ontem cedo, andaram rapido e estao no Acabamento agora (o painel mostra).
+            val naFila = i > 28
+            val aberta = if (naFila) ontemCedo.plus(sorte.nextLong(0, 90), ChronoUnit.MINUTES)
+            else somarHorasUteis(desde, sorte.nextDouble(0.0, 20 * 10.0)).coerceAtMost(agora.minus(40, ChronoUnit.MINUTES))
             val rota = rotasAcabamento.qualquer()
             val passos = mutableListOf<Passo>()
             var t = aberta
             rota.forEachIndexed { j, setor ->
-                t = somarHorasUteis(t, sorte.nextDouble(0.3, 3.0))
+                val noAcabamento = setor == SetorNome.ACABAMENTO
+                t = somarHorasUteis(t, if (naFila) sorte.nextDouble(0.2, 0.8) else sorte.nextDouble(0.3, 3.0))
                 passos += Passo.Receber(setor, operador(setor), t)
-                t = somarHorasUteis(t, sorte.nextDouble(1.5, 9.0))
+                t = somarHorasUteis(
+                    t, when {
+                        naFila && noAcabamento -> sorte.nextDouble(30.0, 40.0)
+                        naFila -> sorte.nextDouble(1.0, 2.5)
+                        else -> sorte.nextDouble(1.5, 9.0)
+                    }
+                )
                 passos += Passo.Despachar(setor, if (j == rota.lastIndex) SetorNome.PRATELEIRA else rota[j + 1], operador(setor), t)
             }
             fecharNoFinanceiro(passos, SetorNome.PRATELEIRA, vendedor, t)
@@ -510,41 +634,48 @@ class GeradorFicticio(
 
     // ------------------------------------------------------------------ agenda
 
-    /** Os cards da agenda, ligados as OS, com o que o adesivador registrou. */
-    private fun gravarAgenda(projetos: List<Projeto>): Int {
+    /**
+     * Os cards da agenda como a alca que replica os deixa: uma copia por espaco, todas do
+     * mesmo servico (mesma OS, mesmo estado), e o Indisponivel linha a linha.
+     */
+    private fun gravarAgenda(frota: Frota): Int {
         val codigos = vendedores.associateWith { it.nome.trim().take(1).uppercase() }
         val inicioDaSemana = LocalDate.now(zona).with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
+        val amanha = avancarDiasUteis(LocalDate.now(zona), 1)
         var cards = 0
-        for (p in projetos) {
-            if (p.inicio == Instant.EPOCH) {
-                agendamentoRepository.save(
-                    Agendamento(
-                        data = p.dias.first(), adesivador = p.coluna, slotInicio = 1, tipo = TipoAgendamento.INDISPONIVEL,
-                        horasEstimadas = FaixasDoDia.horasUteisNoDia(p.dias.first()), descricao = p.veiculo,
-                        status = StatusAgendamento.PROGRAMADO, observacao = MARCA_AGENDA, criadoPor = reserva
-                    )
+        for ((coluna, e) in frota.bloqueios) {
+            agendamentoRepository.save(
+                Agendamento(
+                    data = e.dia, adesivador = coluna, slotInicio = e.faixaInicio, tipo = TipoAgendamento.INDISPONIVEL,
+                    horasEstimadas = e.horas, descricao = "INDISPONÍVEL", status = StatusAgendamento.PROGRAMADO,
+                    observacao = MARCA_AGENDA, criadoPor = reserva
                 )
-                cards++
-                continue
-            }
+            )
+            cards++
+        }
+        for (p in frota.projetos) {
             val iniciado = !p.naoVeio && !p.inicio.isAfter(agora)
-            val concluido = iniciado && !p.fim.isAfter(agora)
+            val concluido = iniciado && p.fim?.isAfter(agora) == false
             val status = when {
                 p.naoVeio -> StatusAgendamento.NAO_VEIO
                 concluido -> StatusAgendamento.CONCLUIDO
                 iniciado -> StatusAgendamento.EXECUTANDO
+                // O carro de hoje ou de amanha que ja chegou fica "Em patio"; de vez em quando
+                // um servico a frente e feito fora (Externo).
+                !p.espacos.first().dia.isAfter(amanha) && sorte.nextInt(100) < 45 -> StatusAgendamento.EM_PATIO
+                sorte.nextInt(100) < 5 -> StatusAgendamento.EXTERNO
                 else -> StatusAgendamento.PROGRAMADO
             }
             // O score se lanca depois, no relatorio: a semana atual ainda tem uns sem.
-            val score = if (concluido && (p.dias.last().isBefore(inicioDaSemana) || sorte.nextInt(100) < 50))
+            val score = if (concluido && (p.espacos.last().dia.isBefore(inicioDaSemana) || sorte.nextInt(100) < 50))
                 BigDecimal(p.tipo.score) else null
 
             var grupo: Long? = null
-            p.dias.forEachIndexed { i, dia ->
+            p.espacos.forEachIndexed { i, e ->
                 val card = agendamentoRepository.save(
                     Agendamento(
-                        data = dia, adesivador = p.coluna, slotInicio = 1, tipo = TipoAgendamento.SERVICO,
-                        horasEstimadas = FaixasDoDia.horasUteisNoDia(dia),
+                        data = e.dia, adesivador = p.coluna, slotInicio = e.faixaInicio, tipo = TipoAgendamento.SERVICO,
+                        horasEstimadas = e.horas,
                         descricao = "${p.veiculo} ${p.cliente.fantasia}".take(200),
                         vendedorCodigo = codigos[p.vendedor], status = status, score = if (i == 0) score else null,
                         ordemServico = p.plano?.os, observacao = MARCA_AGENDA, grupoId = grupo,
@@ -556,14 +687,14 @@ class GeradorFicticio(
                         conclusaoRegistradaPor = if (concluido) p.adesivador else null
                     )
                 )
-                // A primeira parte e a chave do conjunto: as copias apontam para ela.
-                if (p.dias.size > 1 && i == 0) {
+                // A primeira copia e a chave do servico: as outras apontam para ela.
+                if (p.espacos.size > 1 && i == 0) {
                     grupo = card.id
                     card.grupoId = card.id
                     agendamentoRepository.save(card)
                 }
                 if (i == 0 && p.pausa != null && iniciado) {
-                    val (de, ate) = p.pausa
+                    val (de, ate) = p.pausa!!
                     pausaRepository.save(
                         PausaProjeto(
                             servicoId = card.id!!, inicio = de, fim = ate?.takeIf { concluido || it.isBefore(agora) },
@@ -672,5 +803,7 @@ class GeradorFicticio(
         const val MARCA_AGENDA = "Lancamento ficticio para demonstracao $MARCA"
         private val INICIO: LocalTime = LocalTime.of(7, 30)
         private val FIM: LocalTime = LocalTime.of(17, 30)
+        /** Espacos de trabalho por dia na agenda (a tela: BLOCOS_POR_DIA). */
+        private const val ESPACOS_POR_DIA = 5
     }
 }

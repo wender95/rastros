@@ -46,10 +46,10 @@ rastros:
   empresa:
     nome: ${EMPRESA_NOME:RastrOS}
     logo: ${EMPRESA_LOGO:/rastros-logo-branca.svg}
-  # Fase de teste: o administrador pode "agir como" qualquer usuario, sem a senha dele.
-  # Desligue quando o teste acabar com PERSONIFICACAO=false.
+  # O administrador "agindo como" outra pessoa e so para a fase de teste de uma instalacao:
+  # desligado. Liga com PERSONIFICACAO=true.
   personificacao:
-    habilitada: ${PERSONIFICACAO:true}
+    habilitada: ${PERSONIFICACAO:false}
   jwt:
     # Vazio: a instalacao gera a propria chave em data/jwt.secret na primeira partida.
     secret: ${JWT_SECRET:}

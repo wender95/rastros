@@ -4,6 +4,7 @@ import type { LoginResponse, Usuario } from '../api/tipos'
 import { rotuloPerfil } from '../auth/acessos'
 import { esquecerSetorAtivo } from '../auth/setorAtivo'
 import { esquecerSessaoAdmin, guardarSessaoAdmin, lerSessaoAdmin as lerAdmin } from '../auth/sessaoAdmin'
+import { useEmpresa } from './Marca'
 import { rotuloSetor } from './Ui'
 
 /**
@@ -121,7 +122,9 @@ function Seletor({ atual, rotulo }: { atual?: number; rotulo: string }) {
 
 /** No topo, para o administrador: escolher por quem agir. */
 export function SeletorAgirComo({ usuario }: { usuario: Usuario }) {
-  if (usuario.perfil !== 'ADMIN' || usuario.agindoPor) return null
+  // Desligado no servidor (PERSONIFICACAO=false): nem aparece.
+  const empresa = useEmpresa()
+  if (usuario.perfil !== 'ADMIN' || usuario.agindoPor || !empresa?.agirComo) return null
   return <Seletor rotulo="Agir como…" />
 }
 

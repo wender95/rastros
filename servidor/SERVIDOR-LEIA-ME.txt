@@ -101,13 +101,12 @@ ANTES DE COMECAR
       conferir que abre de fora.
 
 
-5. FASE DE TESTE: O ADMIN "AGINDO COMO" OUTRA PESSOA
-   Com o admin, a barra do topo tem "Agir como...": escolha a pessoa e o sistema passa a
-   mostrar as telas dela (o setor, a Minha agenda); tudo o que for feito fica em nome
-   dela. Uma faixa laranja avisa o tempo todo; "Voltar para o admin" encerra.
-   QUANDO O TESTE ACABAR, desligue: abra SERVIDOR-INICIAR.cmd no Bloco de Notas, troque
-       set PERSONIFICACAO=true   por   set PERSONIFICACAO=false
-   salve e rode  .\SERVIDOR-INSTALAR.ps1 -Reiniciar
+5. FASE DE TESTE: O ADMIN "AGINDO COMO" OUTRA PESSOA (VEM DESLIGADO)
+   Numa fase de teste, o admin pode ver as telas de outra pessoa e agir em nome dela
+   (tudo fica registrado em nome dela, com uma faixa laranja avisando). Para ligar: abra
+   SERVIDOR-INICIAR.cmd no Bloco de Notas, troque
+       set PERSONIFICACAO=false   por   set PERSONIFICACAO=true
+   salve e rode  .\SERVIDOR-INSTALAR.ps1 -Reiniciar . Desligue de novo quando o teste acabar.
 
 
 SEGURANCA - O QUE JA ESTA FEITO E O QUE E RECOMENDADO

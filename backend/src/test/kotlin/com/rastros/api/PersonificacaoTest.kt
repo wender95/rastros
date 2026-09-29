@@ -51,6 +51,12 @@ class PersonificacaoTest : TesteIntegracao() {
     }
 
     @Test
+    fun `a tela sabe se o agir como esta ligado nesta instalacao`() {
+        val corpo = json.readTree(mvc.perform(request(HttpMethod.GET, "/api/empresa")).andReturn().response.contentAsString)
+        assertThat(corpo["agirComo"].asBoolean()).isTrue()
+    }
+
+    @Test
     fun `o admin age como o adesivador e a sessao diz quem esta por tras`() {
         val token = agirComoHeitor()
 

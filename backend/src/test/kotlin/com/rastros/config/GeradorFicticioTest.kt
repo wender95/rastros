@@ -61,8 +61,19 @@ class GeradorFicticioTest : TesteIntegracao() {
 
         val cards = agendamentos.findAll().filter { it.adesivador.id == coluna.id && it.ehServico }
         assertThat(cards).isNotEmpty()
-        // Um projeto por dia (o de dois dias sao copias, cada uma no seu dia).
-        assertThat(cards.groupBy { it.data }.values).allSatisfy { assertThat(it).hasSize(1) }
+        // Como a alca que replica deixa: cada card ocupa um espaco so do dia (no maximo 2h30)...
+        assertThat(cards).allSatisfy { assertThat(it.horasEstimadas).isLessThanOrEqualTo(BigDecimal("2.5")) }
+        // ...as copias de um servico andam juntas (mesma OS, mesmo estado, mesmo inicio e conclusao)...
+        val servicos = cards.groupBy { it.grupoId ?: it.id }.values
+        assertThat(servicos).allSatisfy { copias ->
+            assertThat(copias.map { listOf(it.status, it.ordemServico?.id, it.iniciadoEm, it.concluidoEm) }.distinct()).hasSize(1)
+        }
+        // ...e o dia tem varios servicos, nao um so.
+        val servicosPorDia = servicos.flatMap { copias -> copias.map { it.data }.distinct() }.groupingBy { it }.eachCount()
+        assertThat(servicosPorDia.values.count { it >= 2 }).isGreaterThan(servicosPorDia.size / 2)
+        // Um servico depois do outro: nenhum comeca antes do anterior acabar.
+        val execucoes = servicos.map { it.first() }.filter { it.iniciadoEm != null && it.concluidoEm != null }.sortedBy { it.iniciadoEm }
+        execucoes.zipWithNext().forEach { (antes, depois) -> assertThat(depois.iniciadoEm).isAfterOrEqualTo(antes.concluidoEm) }
 
         val concluidos = cards.filter { it.status == StatusAgendamento.CONCLUIDO }
         assertThat(concluidos).isNotEmpty().allSatisfy { card ->

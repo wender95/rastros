@@ -15,6 +15,9 @@ spring:
 rastros:
   # Os testes montam os proprios dados: sem a demonstracao completa.
   demo-completa: false
+  # Os testes do "agir como" precisam dele ligado, seja qual for o padrao da instalacao.
+  personificacao:
+    habilitada: true
   jwt:
     secret: chave-de-teste-com-mais-de-trinta-e-dois-bytes-2026
   backup:

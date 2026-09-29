@@ -122,9 +122,13 @@ Para ver o sistema "em operação", suba a API com a carga de demonstração (o 
 `iniciar-backend.ps1`) e a tela com o `iniciar-frontend.ps1`, e abra <http://localhost:5173>.
 Num banco novo, o sistema já nasce com umas **seis semanas de operação coerente**:
 
-- **4 adesivadores**, cada um com um projeto por dia na agenda, com **início e conclusão
-  registrados por ele** (algumas pausas; ônibus e caminhões em dois dias). Hoje, cada um
-  está com o seu projeto em andamento no painel;
+- **4 adesivadores** com a agenda preenchida como na operação real: **vários serviços por
+  dia**, uma cópia por espaço (como a alça que replica deixa), caminhões e ônibus passando
+  para o dia seguinte, um dia Indisponível de vez em quando. Cada serviço tem **início e
+  conclusão registrados pelo adesivador**, um depois do outro, às vezes com pausa;
+- **Hoje, no painel**: o que cada um já concluiu, o que está fazendo (**Agora**) e o que vem
+  depois — um adesivador pausado, um que começou outro sem concluir o anterior e um
+  caminhão que começou ontem e continua em andamento;
 - **OS no formato do ERP** (número de 5 dígitos, razão social e serviço), cada uma ligada ao
   projeto da agenda e passando pelos setores pelo caminho certo: Criação, Impressão,
   Recorte ou Preparação, Frota, Pátio e Financeiro — além de placas e banners pelo
