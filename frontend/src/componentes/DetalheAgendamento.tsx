@@ -13,10 +13,10 @@ import {
   Aviso,
   ChipSetor,
   ChipStatus,
-  STATUS_AGENDA,
+  classeStatus,
+  useLegenda,
   useVendedores,
   formatarHoras,
-  rotuloStatusAgenda,
 } from './Ui'
 
 /** Opções de horas estimadas, em passos que batem com as faixas do dia. */
@@ -32,6 +32,12 @@ interface Props {
   podeEditar: boolean
   /** Marcar o andamento do carro (hoje, quem pode editar a agenda). */
   podeMudarStatus: boolean
+  /**
+   * Esconde horário, duração e estado: na agenda simplificada isso tudo se resolve na
+   * própria grade (o lugar do card, a alça do canto e o menu do botão direito), e repetir
+   * aqui só dá duas verdades para a mesma coisa.
+   */
+  semHorarios?: boolean
   aoFechar: () => void
   aoSalvar: () => void
 }
@@ -49,16 +55,20 @@ export default function DetalheAgendamento({
   faixas,
   podeEditar,
   podeMudarStatus,
+  semHorarios = false,
   aoFechar,
   aoSalvar,
 }: Props) {
   const vendedores = useVendedores()
+  const legenda = useLegenda()
   const [descricao, setDescricao] = useState(agendamento?.descricao ?? '')
   const [vendedor, setVendedor] = useState(agendamento?.vendedorCodigo ?? '')
   const [horas, setHoras] = useState(agendamento?.horasEstimadas ?? 1)
   const [slotInicio, setSlotInicio] = useState(agendamento?.slotInicio ?? novaCelula?.slot ?? 1)
   const [tipo, setTipo] = useState<TipoAgendamento>(agendamento?.tipo ?? 'SERVICO')
   const [status, setStatus] = useState<StatusAgendamento>(agendamento?.status ?? 'PROGRAMADO')
+  /** Status criado na agenda (etiqueta), no lugar do status do sistema. */
+  const [etiquetaId, setEtiquetaId] = useState<number | null>(agendamento?.etiquetaId ?? null)
   const [osId, setOsId] = useState<string>(
     agendamento?.material?.osId != null ? String(agendamento.material.osId) : '',
   )
@@ -98,6 +108,7 @@ export default function DetalheAgendamento({
       descricao: descricao.trim(),
       vendedorCodigo: vendedor.trim() || null,
       status,
+      etiquetaId,
       // O score não se lança aqui: ele é atribuído no relatório semanal, olhando o
       // serviço entregue.
       observacao: observacao.trim() || null,
@@ -271,7 +282,7 @@ export default function DetalheAgendamento({
             >
               Sem vendedor
             </button>
-            {vendedores.map((v) => (
+            {vendedores.filter((v) => v.ativo || v.codigo === vendedor.toUpperCase()).map((v) => (
               <button
                 key={v.codigo}
                 type="button"
@@ -287,7 +298,7 @@ export default function DetalheAgendamento({
           </div>
         </div>
 
-        <div className="campo">
+        <div className="campo" hidden={semHorarios}>
           <label>Começa às</label>
           <div className="seletor-status">
             {faixas
@@ -306,7 +317,7 @@ export default function DetalheAgendamento({
           </div>
         </div>
 
-        <div className="campo">
+        <div className="campo" hidden={semHorarios}>
           <label>Duração — até um dia</label>
           <div className="seletor-status">
             {HORAS.map((h) => (
@@ -364,26 +375,35 @@ export default function DetalheAgendamento({
           </div>
         </div>
 
-        <div className="campo" hidden={tipo === 'INDISPONIVEL'}>
+        <div className="campo" hidden={semHorarios || tipo === 'INDISPONIVEL'}>
           <label>Status</label>
           <div className="seletor-status">
-            {STATUS_AGENDA.map((s) => (
-              <button
-                key={s}
-                type="button"
-                disabled={!podeMudarStatus || ocupado}
-                className={`chip ag-${s.toLowerCase()} ${status === s ? 'selecionado' : ''}`}
-                onClick={() => {
-                  setStatus(s)
-                  // Operador da Frota só mexe no andamento: aplica na hora.
-                  if (!podeEditar && agendamento) {
-                    executar(() => api.patch(`/agenda/${agendamento.id}/status`, { status: s }))
-                  }
-                }}
-              >
-                {rotuloStatusAgenda(s)}
-              </button>
-            ))}
+            {legenda.map((s) => {
+              // Os do sistema pelo status; os criados na agenda pela etiqueta (o card fica Programado).
+              const novoStatus: StatusAgendamento = s.chave ?? 'PROGRAMADO'
+              const novaEtiqueta = s.chave ? null : s.id
+              const escolhido = novaEtiqueta != null ? etiquetaId === novaEtiqueta : etiquetaId == null && status === s.chave
+              return (
+                <button
+                  key={s.id}
+                  type="button"
+                  disabled={!podeMudarStatus || ocupado}
+                  className={`chip ${classeStatus(novoStatus, novaEtiqueta)} ${escolhido ? 'selecionado' : ''}`}
+                  onClick={() => {
+                    setStatus(novoStatus)
+                    setEtiquetaId(novaEtiqueta)
+                    // Operador da Frota só mexe no andamento: aplica na hora.
+                    if (!podeEditar && agendamento) {
+                      executar(() =>
+                        api.patch(`/agenda/${agendamento.id}/status`, { status: novoStatus, etiquetaId: novaEtiqueta }),
+                      )
+                    }
+                  }}
+                >
+                  {s.nome}
+                </button>
+              )
+            })}
           </div>
         </div>
 

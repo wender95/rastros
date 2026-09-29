@@ -1,4 +1,19 @@
-﻿export type PerfilNome = 'OPERACIONAL' | 'VENDEDOR' | 'DIRETORIA' | 'ADMIN' | 'FINANCEIRO'
+﻿export type PerfilNome = 'OPERACIONAL' | 'VENDEDOR' | 'DIRETORIA' | 'ADMIN' | 'FINANCEIRO' | 'PERSONALIZADO'
+
+/** As seções do sistema que se liberam por pessoa (o perfil traz as dele prontas). */
+export type SecaoDoSistema =
+  | 'PAINEL'
+  | 'PAINEL_ADESIVADORES'
+  | 'PAINEL_ACABAMENTO'
+  | 'AGENDA_VER'
+  | 'AGENDA_EDITAR'
+  | 'AGENDA_LEGENDA'
+  | 'PATIO_PRATELEIRA'
+  | 'CONSULTA'
+  | 'CRIAR_OS'
+  | 'PRODUTIVIDADE'
+  | 'RELATORIO'
+  | 'PAINEL_ACOES'
 
 export type SetorNome =
   | 'CRIACAO'
@@ -32,11 +47,19 @@ export interface Usuario {
   perfil: PerfilNome
   setor: SetorNome | null
   setorId: number | null
+  /** Todos os setores da pessoa (o principal primeiro); mais de um: escolhe em Meu setor. */
+  setores?: { id: number; nome: SetorNome }[]
   ativo: boolean
   /** Senha provisória: a troca de senha aparece antes de qualquer outra tela. */
   trocarSenha?: boolean
   /** Tem uma coluna na agenda dos adesivadores: vê a aba "Minha agenda". */
   temAgenda?: boolean
+  /** Nome do administrador agindo como esta pessoa (fase de teste). */
+  agindoPor?: string | null
+  /** As seções que a pessoa acessa: as do perfil, com os ajustes do cadastro. */
+  secoes?: SecaoDoSistema[]
+  /** O que difere do padrão do perfil: true liberada, false tirada. */
+  ajustesDeSecao?: Partial<Record<SecaoDoSistema, boolean>>
 }
 
 export interface LoginResponse {
@@ -57,6 +80,7 @@ export interface Fluxo {
   osId: number
   numeroOsErp: string
   cliente: string | null
+  servico: string | null
   identificadorFluxo: string
   status: StatusFluxo
   setorAtualId: number
@@ -130,6 +154,8 @@ export interface Ordem {
   id: number
   numeroOsErp: string
   cliente: string | null
+  /** O que a OS manda fazer, como o ERP escreve. Vem da extensão; nas antigas é nulo. */
+  servico: string | null
   criadoPor: string
   criadoEm: string
   cancelada: boolean
@@ -219,6 +245,8 @@ export interface ServicoDoRelatorio {
   dias: number
   descricao: string
   status: StatusAgendamento
+  /** Status criado na agenda que o card mostra. */
+  etiquetaId?: number | null
   tipo: TipoAgendamento
   vendedor: string | null
   numeroOsErp: string | null
@@ -226,6 +254,27 @@ export interface ServicoDoRelatorio {
   materialPronto: boolean | null
   score: number | null
   horasEstimadas: number
+  /** Quando o adesivador iniciou e concluiu - o horário real, não o da agenda. */
+  iniciadoEm: string | null
+  /** As pausas do serviço (o ícone de pausa mostra os horários). */
+  pausas?: { inicio: string; fim: string | null; pausadoPor?: string | null; retomadoPor?: string | null }[]
+  /** Quem registrou o início e a conclusão (o mouse sobre o horário mostra). */
+  iniciadoPor?: string | null
+  concluidoPor?: string | null
+  concluidoEm: string | null
+}
+
+/** Um serviço achado pela busca do relatório, com o adesivador de quem ele é. */
+export interface ServicoEncontrado {
+  adesivador: string
+  servico: ServicoDoRelatorio
+}
+
+/** Busca do relatório em todos os meses; `limitado`: há mais do que os mostrados. */
+export interface BuscaRelatorio {
+  termo: string
+  servicos: ServicoEncontrado[]
+  limitado: boolean
 }
 
 export interface RelatorioAdesivador {
@@ -295,6 +344,8 @@ export interface Material {
   osId: number
   numeroOsErp: string
   cliente: string | null
+  /** O que a OS manda fazer, como o ERP escreve. */
+  servico: string | null
   osCancelada: boolean
   pronto: boolean
   fluxos: MaterialFluxo[]
@@ -333,8 +384,15 @@ export interface Agendamento {
   descricao: string
   vendedorCodigo: string | null
   status: StatusAgendamento
+  /** Status criado na agenda que o card mostra no lugar do status do sistema. */
+  etiquetaId?: number | null
+  /** Coluna Noturno: os adesivadores atribuídos ao serviço. */
+  atribuidos?: { id: number; nome: string }[]
   observacao: string | null
   material: Material | null
+  /** Partes do mesmo serviço: a chave do conjunto e quantas partes ele tem. */
+  grupoId?: number | null
+  partes?: number
 }
 
 export interface DiaAgenda {

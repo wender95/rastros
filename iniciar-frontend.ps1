@@ -1,4 +1,4 @@
-# Sobe o frontend do OS Tracker na porta 5173.
+# Sobe o frontend do RastrOS na porta 5173.
 # Uso:  .\iniciar-frontend.ps1
 # O backend precisa estar rodando na 8080 (veja iniciar-backend.ps1).
 

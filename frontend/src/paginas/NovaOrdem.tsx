@@ -9,7 +9,7 @@ interface LinhaFluxo {
   setorInicialId: string
 }
 
-const LINHA_VAZIA: LinhaFluxo = { identificador: 'Principal', setorInicialId: '' }
+const LINHA_VAZIA: LinhaFluxo = { identificador: '', setorInicialId: '' }
 
 /** RF01 - o Vendedor abre a OS (número vindo do ERP) com um ou mais fluxos paralelos. */
 export default function NovaOrdem() {
@@ -17,6 +17,7 @@ export default function NovaOrdem() {
   const [setores, setSetores] = useState<Setor[]>([])
   const [numeroOsErp, setNumeroOsErp] = useState('')
   const [cliente, setCliente] = useState('')
+  const [servico, setServico] = useState('')
   const [linhas, setLinhas] = useState<LinhaFluxo[]>([{ ...LINHA_VAZIA }])
   const [erro, setErro] = useState<string | null>(null)
   const [enviando, setEnviando] = useState(false)
@@ -45,8 +46,10 @@ export default function NovaOrdem() {
       const ordem = await api.post<Ordem>('/ordens', {
         numeroOsErp: numeroOsErp.trim(),
         cliente: cliente.trim() || null,
+        servico: servico.trim() || null,
         fluxos: linhas.map((l) => ({
-          identificador: l.identificador.trim() || 'Principal',
+          // Sem nome, o fluxo se chama como o serviço da OS — que é como o pessoal a chama.
+          identificador: l.identificador.trim() || servico.trim().slice(0, 50) || 'Principal',
           setorInicialId: Number(l.setorInicialId),
         })),
       })
@@ -62,8 +65,12 @@ export default function NovaOrdem() {
     <>
       <div className="cabecalho-pagina">
         <div>
-          <h1>Abrir fluxo de OS</h1>
-          <p>O número da OS é gerado no ERP. Cada fluxo caminha de forma independente.</p>
+          <h1>OS manual</h1>
+          <p>
+            O normal é importar a OS do ERP pela extensão do navegador. Use esta tela só quando a
+            importação não for possível. O número da OS é o do ERP e cada fluxo caminha de forma
+            independente.
+          </p>
         </div>
       </div>
 
@@ -91,6 +98,15 @@ export default function NovaOrdem() {
                 placeholder="Ex.: Supermercado Estrela"
               />
             </div>
+            <div className="campo">
+              <label htmlFor="servico">Serviço (opcional)</label>
+              <input
+                id="servico"
+                value={servico}
+                onChange={(e) => setServico(e.target.value)}
+                placeholder="Ex.: Adesivo de porta — 4 unidades"
+              />
+            </div>
           </div>
 
           <div className="titulo-secao" style={{ padding: '14px 0 10px', borderBottom: 'none' }}>
@@ -105,8 +121,7 @@ export default function NovaOrdem() {
                   <input
                     value={linha.identificador}
                     onChange={(e) => atualizarLinha(indice, 'identificador', e.target.value)}
-                    placeholder="Ex.: Lona impressa"
-                    required
+                    placeholder={servico.trim() ? `Vazio: ${servico.trim()}` : 'Ex.: Lona impressa'}
                   />
                 </div>
                 <div className="campo" style={{ marginBottom: 0 }}>
@@ -154,7 +169,7 @@ export default function NovaOrdem() {
 
           <div className="rodape-modal">
             <button className="botao botao-grande" disabled={enviando}>
-              {enviando ? 'Abrindo...' : 'Abrir OS'}
+              {enviando ? 'Lançando...' : 'Lançar OS manual'}
             </button>
           </div>
         </div>

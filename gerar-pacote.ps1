@@ -1,11 +1,11 @@
-# Gera o pacote de producao do OS Tracker: um unico jar com a API e a tela.
+# Gera o pacote de producao do RastrOS: um unico jar com a API e a tela.
 #
 # Uso:
 #   .\gerar-pacote.ps1
 #   .\gerar-pacote.ps1 -PularTestes      <- so em emergencia
 #
 # Faz o build do React (frontend\dist), roda os testes do backend e empacota tudo em
-# backend\target\os-tracker-api-1.0.0.jar. Com o jar no ar, o sistema inteiro fica em
+# backend\target\rastros-api-1.0.0.jar. Com o jar no ar, o sistema inteiro fica em
 # http://localhost:8080 - sem o servidor do Vite.
 
 param([switch] $PularTestes)
@@ -34,6 +34,6 @@ try {
     if ($LASTEXITCODE -ne 0) { throw 'O build da API falhou (ou algum teste nao passou).' }
 } finally { Pop-Location }
 
-$jar = Join-Path $raiz 'backend\target\os-tracker-api-1.0.0.jar'
+$jar = Join-Path $raiz 'backend\target\rastros-api-1.0.0.jar'
 Write-Host "`nPacote pronto: $jar" -ForegroundColor Green
 Write-Host 'Para subir: .\iniciar-producao.ps1  (ou registre com .\instalar-servico.ps1)'

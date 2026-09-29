@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useAuth } from '../auth/AuthContext'
+import { MarcaEmpresa, useEmpresa } from '../componentes/Marca'
 import { Aviso } from '../componentes/Ui'
 
 export default function Login() {
@@ -8,6 +9,7 @@ export default function Login() {
   const [senha, setSenha] = useState('')
   const [erro, setErro] = useState<string | null>(null)
   const [enviando, setEnviando] = useState(false)
+  const empresa = useEmpresa()
 
   async function enviar(evento: React.FormEvent) {
     evento.preventDefault()
@@ -26,7 +28,8 @@ export default function Login() {
     <div className="login-tela">
       <div className="login-caixa">
         <h1 className="login-marca">
-          OS <span>Tracker</span>
+          {/* A marca é a da empresa que usa o sistema nesta instalação. */}
+          <MarcaEmpresa empresa={empresa} />
         </h1>
         <p className="subtitulo">Rastreabilidade de Ordens de Serviço</p>
 

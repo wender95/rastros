@@ -1,4 +1,4 @@
-# Sobe o OS Tracker em modo producao: API e tela no mesmo endereco, porta 8080.
+# Sobe o RastrOS em modo producao: API e tela no mesmo endereco, porta 8080.
 #
 # Uso:  .\iniciar-producao.ps1
 #
@@ -14,7 +14,7 @@
 $ErrorActionPreference = 'Stop'
 $raiz = Split-Path -Parent $MyInvocation.MyCommand.Path
 $backend = Join-Path $raiz 'backend'
-$jar = Join-Path $backend 'target\os-tracker-api-1.0.0.jar'
+$jar = Join-Path $backend 'target\rastros-api-1.0.0.jar'
 if (-not (Test-Path $jar)) { throw "Pacote nao encontrado ($jar). Rode .\gerar-pacote.ps1 antes." }
 
 # Acha o Java 21+ (JAVA_HOME, instalacoes comuns ou PATH) - a tarefa agendada roda sem o PATH do usuario.
@@ -23,7 +23,7 @@ $java = Get-JavaExe
 
 # Producao: um banco novo nasce sem dados ficticios, so com um administrador.
 if (-not $env:CARGA_DEMO) { $env:CARGA_DEMO = 'false' }
-if (-not $env:LOGGING_FILE_NAME) { $env:LOGGING_FILE_NAME = 'logs/ostracker.log' }
+if (-not $env:LOGGING_FILE_NAME) { $env:LOGGING_FILE_NAME = 'logs/rastros.log' }
 
 # O banco (data\) e os backups (backups\) ficam relativos a pasta backend.
 Set-Location $backend

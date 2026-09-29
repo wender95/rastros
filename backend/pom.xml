@@ -11,10 +11,10 @@
         <relativePath/>
     </parent>
 
-    <groupId>com.ostracker</groupId>
-    <artifactId>os-tracker-api</artifactId>
+    <groupId>com.rastros</groupId>
+    <artifactId>rastros-api</artifactId>
     <version>1.0.0</version>
-    <name>OS Tracker API</name>
+    <name>RastrOS API</name>
     <description>API REST de rastreabilidade de Ordens de Servico</description>
 
     <properties>

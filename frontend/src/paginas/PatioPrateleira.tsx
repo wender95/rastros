@@ -25,7 +25,14 @@ function combina(item: OsEmEspera, busca: string) {
   if (termos.length === 0) return true
   const { fluxo, servicos } = item
   const texto = normalizar(
-    [fluxo.numeroOsErp, fluxo.cliente ?? '', fluxo.identificadorFluxo, fluxo.criadoPor, ...servicos].join(' '),
+    [
+      fluxo.numeroOsErp,
+      fluxo.cliente ?? '',
+      fluxo.servico ?? '',
+      fluxo.identificadorFluxo,
+      fluxo.criadoPor,
+      ...servicos,
+    ].join(' '),
   )
   return termos.every((t) => texto.includes(t))
 }
@@ -138,6 +145,8 @@ export default function PatioPrateleira() {
                       <div className={`os-cartao${confirmando === f.id ? ' os-cartao-aberto' : ''}`} key={f.id}>
                         <div className="os-identificacao">
                           <div className="os-numero">OS {f.numeroOsErp}</div>
+                          {/* O serviço que veio do ERP, embaixo do número — como na Consulta. */}
+                          {f.servico && <div className="os-descricao">{f.servico}</div>}
                           <div className="os-detalhe">
                             {f.cliente ?? 'Cliente não informado'}
                             {f.identificadorFluxo !== 'Principal' && ` · ${f.identificadorFluxo}`}

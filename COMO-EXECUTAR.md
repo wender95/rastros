@@ -1,4 +1,4 @@
-# Como executar o OS Tracker
+# Como executar o RastrOS
 
 Guia de operação: instalar, rodar, testar, fazer backup e entender cada tela e regra. A
 visão geral do projeto está no [README](./README.md) e a especificação em [`docs/`](./docs/).
@@ -72,20 +72,36 @@ administrador**:
 powershell -ExecutionPolicy Bypass -File .\instalar-servico.ps1
 ```
 
-Isso registra a tarefa agendada **OS Tracker**: roda o `iniciar-producao.ps1` na partida
+Isso registra a tarefa agendada **RastrOS**: roda o `iniciar-producao.ps1` na partida
 do Windows, com a conta do sistema, e reinicia a aplicação se ela cair (até 3 vezes, de
 minuto em minuto). Para desfazer, rode o mesmo script com `-Remover`. Os logs ficam em
-`backend\logs\ostracker.log`.
+`backend\logs\rastros.log`.
 
 Para **outras máquinas da rede** abrirem o sistema, libere a porta no firewall (também como
 administrador):
 
 ```bash
-New-NetFirewallRule -DisplayName 'OS Tracker' -Direction Inbound -Protocol TCP -LocalPort 8080 -Action Allow
+New-NetFirewallRule -DisplayName 'RastrOS' -Direction Inbound -Protocol TCP -LocalPort 8080 -Action Allow
 ```
 
 > A tarefa e o `iniciar-backend.ps1` usam a mesma porta 8080: com a tarefa registrada, não
 > suba o backend de desenvolvimento ao mesmo tempo.
+
+### Fase de teste: o administrador "agindo como" outra pessoa
+
+Com a função ligada (`PERSONIFICACAO=true`, o padrão), o **administrador** tem na barra do
+topo o seletor **Agir como…**: escolhida a pessoa, o sistema recarrega nas telas dela — o
+setor (receber, devolver, despachar) ou a Minha agenda (iniciar e concluir projetos) — sem
+precisar da senha dela, nem mesmo se ela ainda estiver com a senha provisória. Uma **faixa
+laranja** fica em toda tela dizendo por quem se está agindo, com **Trocar de pessoa…** e
+**Voltar para o admin**.
+
+* Tudo o que for feito fica **em nome da pessoa** (quem recebeu, quem despachou, quem
+  iniciou); o log do servidor registra quando o administrador passou a agir por ela.
+* A sessão emprestada não entra na Administração, e só o administrador escolhe por quem
+  agir (não dá para agir como outro administrador).
+* A sessão só vale enquanto o administrador estiver ativo e a função ligada: desligar
+  (`PERSONIFICACAO=false` + reiniciar) derruba na hora as sessões emprestadas abertas.
 
 ## Desenvolvimento: tela com recarga instantânea
 
@@ -133,7 +149,7 @@ O `gerar-pacote.ps1` roda os dois antes de montar o jar. O que está coberto:
 | :--- | :--- |
 | `PlanilhaGabaritoTest` | importa as abas reais de agosto e setembro e confere o score de **cada semana, de cada adesivador**, com a linha `TOTAL SCORE` da própria planilha |
 | `AgendaServiceTest`, `ReempilharTest` | horário exato, almoço e sexta 17h protegidos, empurrar os de baixo, trocar arrastando (serviços de tamanhos diferentes), borda de cima, carga que nunca passa da capacidade, semana cortada no mês, desfazer; salvar sem mudar nada não mexe em ninguém |
-| `MinhaAgendaTest`, `ColunasAgendaTest` | a agenda de cada adesivador (receber, entregar no Pátio, devolver) e o modo edição das colunas |
+| `MinhaAgendaTest`, `ProjetosHttpTest`, `ColunasAgendaTest` | a agenda de cada adesivador por projetos: iniciar recebe a OS na Frota (na hora ou quando ela chegar), concluir manda para o Pátio só quando todos os projetos da OS terminam, devolver; o espelho no painel e a lista do Acabamento; o modo edição das colunas |
 | `PainelTest`, `FeriadoTest`, `HorarioComercialTest` | painel por período; cadastro de feriados; o relógio das OS só conta o expediente (44h por semana) |
 | `ExclusaoUsuarioTest`, `GeradorFicticioTest` | excluir só quem não tem histórico; o gerador de dados fictícios não sobrepõe carros e a limpeza tira só o que gerou |
 | `ImportadorAgendaTest` | dia importado cabe nas 9h, sem sobreposição; reimportar é recusado; o reparo só completa dias ausentes |
@@ -144,9 +160,16 @@ O `gerar-pacote.ps1` roda os dois antes de montar o jar. O que está coberto:
 | `AutenticacaoTest` | senha provisória bloqueia tudo menos a troca; política de senha; chave JWT por instalação |
 | `BackupServiceTest` | o backup restaura num banco vazio com os mesmos dados |
 | `ConsultasTest` | a semana da agenda e o relatório fazem um número fixo de consultas SQL (sem N+1) |
-| `regua.test.ts`, `periodos.test.ts`, `duracao.test.ts` (Vitest) | as contas da grade no navegador batem com as do servidor; semanas cortadas no mês; tempo em dias úteis |
+| `BuscaRelatorioTest` | a busca do relatório acha pelo carro/serviço e pelo número da OS em qualquer mês, do mais recente ao mais antigo, sem bloqueios de agenda |
+| `LoteAgendaTest` | vários cards de uma vez (Shift na agenda): mudar o estado (bloqueio fica como está), excluir e arrastar juntos — se algum cair em cima de um card de fora, nada se move —, e um Ctrl+Z desfaz o lote inteiro, mesmo em semanas diferentes |
+| `ReplicarTest` | a alça do canto replica o card: uma cópia ligada por espaço, com um Ctrl+Z tirando todas; espaço ocupado, nenhuma cópia |
+| `PersonificacaoTest` | o admin age como o adesivador (a sessão diz quem está por trás), recebe a OS em nome dele mesmo com a senha provisória dele; a sessão emprestada não entra na administração; ninguém além do admin escolhe, e não se age como outro admin |
+| `ProtecaoDeLoginTest` | 5 senhas erradas fecham o login do usuário (até com a senha certa), entrar certo zera o contador, e um endereço tentando muitos usuários também é barrado |
+| `MudancasTest` | o aviso de tempo real sai depois do commit — e transação desfeita não avisa ninguém |
+| `MoverComTamanhoTest` | mover levando o tamanho do destino: um serviço de um espaço continua com um espaço em qualquer lugar do dia, inclusive atravessando o almoço, e na troca cada um chega com o tamanho que a tela pediu |
+| `regua.test.ts`, `blocos.test.ts`, `periodos.test.ts`, `duracao.test.ts` (Vitest) | as contas da grade no navegador batem com as do servidor; os 5 pedaços do dia da agenda simplificada; semanas cortadas no mês; tempo em dias úteis |
 
-São **126 testes no backend e 22 no frontend**.
+São **175 testes no backend e 43 no frontend**.
 
 Os testes rodam em bancos próprios (H2 em memória e PostgreSQL temporário): **nunca tocam
 o banco da empresa**.
@@ -171,9 +194,11 @@ Frota) não a tira de lá, e o Financeiro não a puxa. A saída para o Financeir
 Comercial, da Diretoria e do Administrador** — o servidor recusa qualquer outro perfil.
 
 A tela **Pátio e prateleira** (menu desses três perfis) mostra os dois **lado a lado**
-(um embaixo do outro no celular), cada OS com o cliente, o serviço da agenda (ex.:
+(um embaixo do outro no celular), cada OS com a **descrição logo abaixo do número** (o
+serviço que veio do ERP, como na Consulta), o cliente, o serviço da agenda (ex.:
 `TAXI 888 SPIN COMPLETO`), quem abriu e há quanto tempo espera, a mais antiga primeiro. A
-**busca** acha a OS pelo número, pelo cliente, pelo serviço ou pelo vendedor que abriu —
+**busca** acha a OS pelo número, pelo cliente, por qualquer um dos dois serviços ou pelo
+vendedor que abriu —
 sem diferença de acento ou maiúscula, e com várias palavras (`karina spin`) todas precisam
 bater. O botão **Enviar ao Financeiro** pede uma
 confirmação e manda a OS; lá ela espera ser recebida, como em qualquer setor. A lista se
@@ -181,13 +206,31 @@ atualiza sozinha a cada 30 segundos.
 
 ### Tela "Minha agenda" (adesivadores)
 
-Quem tem uma coluna na agenda vê a aba **Minha agenda**: só os carros **dele**, dia a dia
-(setas para o dia anterior e o próximo), pensada para o celular. Cada carro mostra o horário
-**naquele dia** (um serviço longo aparece em cada dia que ocupa, com "começou" e "segue até"),
-o status, a OS com o cliente e onde ela está, e o vendedor. Quando a OS do carro chega na
-Frota, aparece o botão **Receber OS** (o carro passa a *Executando*); recebida, aparecem
-**Pronto — entregar no Pátio** (o carro fica *Concluído*) e **Devolver** para o setor de onde
-veio, os dois com confirmação.
+Quem tem uma coluna na agenda vê a aba **Minha agenda**: só os projetos **dele**, dia a dia
+(setas para o dia anterior e o próximo), pensada para o celular. Cada projeto mostra o
+estado (*Aguardando*, *Em andamento*, *Concluído*…), o **horário real de início e de
+conclusão** — a agenda nova não tem relógio, então não aparece horário da agenda —, a OS com
+o cliente, o serviço e onde ela está, e o vendedor.
+
+**O adesivador não recebe nem despacha OS: ele inicia e conclui projetos.** O caminho da OS
+pelos setores continua o mesmo; o que muda é que, dentro da Frota, a OS acompanha o projeto:
+
+* **▶ Iniciar projeto** — pode ser feito **com ou sem a OS ter chegado na Frota**. Se ela já
+  está lá, é recebida na hora, em nome de quem iniciou. Se ainda não chegou, é recebida
+  **sozinha** no instante em que o setor anterior a despachar para a Frota.
+* **✓ Concluir projeto** (com confirmação) — a OS vai da Frota para o **Pátio**, em nome de
+  quem concluiu. Numa OS com vários projetos (uma frota de três carros, por exemplo), ela só
+  vai para o Pátio quando o **último** for concluído; a mensagem diz quais ainda faltam. Se
+  o projeto for concluído antes de o material chegar, a OS passa direto para o Pátio quando
+  chegar.
+* **↩ Devolver OS** — continua, para material com defeito: aparece com a OS recebida e o
+  projeto em andamento, e o projeto volta a *Aguardando*.
+
+O projeto **em que a pessoa está** — o último que ela iniciou — vem em destaque. Um projeto
+em andamento aparece no dia mesmo que tenha sido agendado para outro (começou ontem, ou foi
+adiantado), para dar para concluí-lo. **Concluído, o projeto não some:** continua na lista do
+dia (e no painel), marcado como concluído, mesmo que estivesse agendado para outro dia. Só o projeto iniciado **pelo adesivador da Frota** na
+própria agenda move a OS: mudar o estado no escritório (teclas da agenda) não mexe nela.
 
 **A Frota trabalha só por aqui:** quem é da Frota e tem coluna na agenda não vê a tela Meu
 setor (todas as OS do setor) — entra direto na Minha agenda. Os outros setores continuam com
@@ -276,32 +319,40 @@ fica **fechado** (`H2_CONSOLE=true` para abrir, só em desenvolvimento).
 
 ## Lançamentos fictícios para teste
 
-Para testar com o sistema "cheio", com os usuários reais já cadastrados, dá para gerar
-um mês de movimento fictício:
+Num **banco novo de demonstração** (`CARGA_DEMO` e `DEMO_COMPLETA`, ligados por padrão), o
+sistema já sobe com umas seis semanas de operação coerente, do começo ao fim:
 
-* OS abertas pelos vendedores ao longo dos **últimos 30 dias**, cada uma passando pelos
-  setores (com os operadores de cada setor), chegando ao Pátio ou à Prateleira, liberada
-  pelo comercial e recebida e concluída pelo Financeiro. As mais recentes param onde
-  estariam hoje: aguardando, em processamento, no Pátio...
-* A **agenda** dos adesivadores cheia, de 30 dias atrás até duas semanas à frente, sem
-  cobrir nenhum carro que já estava lá: táxis completos (2 a 3 dias, ex.: `TAXI 888 SPIN
-  COMPLETO`), caminhões (3 dias), vans, picapes, carros de 2 horas, motos e alguns no
-  Encaixe. Na Frota, quem recebe e despacha é o próprio adesivador do carro. O score já vem
-  lançado nos concluídos (menos em parte da última semana, para lançar no relatório).
-* **Acabamento**: placas, adesivos de logo, banners, que saem pela Prateleira.
-* OS numeradas a partir de **90001**, para não confundir com as do ERP.
+* **Equipe da Frota**: 4 adesivadores, cada um com a sua coluna na agenda ligada à conta
+  dele (`frota`, `lucas`, `rafael`, `tiago`), e a coluna do Noturno.
+* **Um projeto por dia para cada adesivador**, de quatro semanas atrás até duas à frente.
+  O **início e a conclusão** de cada um são registrados pelo próprio adesivador, às vezes
+  com pausa; ônibus e caminhões levam dois dias, como cópias do mesmo serviço. Hoje, cada
+  um está com o seu projeto em andamento (e um deles pausado).
+* **OS no padrão do ERP**: número de 5 dígitos em ordem de abertura, cliente pela razão
+  social e o serviço como a extensão lia (a campanha, ou `1x produto`). O fluxo leva o
+  nome do serviço. Cada card da agenda fica ligado à OS do projeto.
+* **Cada OS segue o caminho certo**: Criação → Impressão → Recorte ou Preparação → Frota
+  (recebida pelo adesivador quando ele inicia) → Pátio (quando ele conclui) → liberada pelo
+  comercial → recebida e concluída pelo Financeiro. As mais recentes param onde estariam
+  hoje. Mais placas, banners e adesivos que saem pelo Acabamento e pela Prateleira, e uma OS
+  cancelada pela Diretoria.
+
+Para gerar o mesmo movimento num banco que **já tem** dados (com os usuários e as colunas
+da agenda que existirem; só entram colunas ligadas a um adesivador com conta, e nenhum card
+de verdade é coberto), as OS são numeradas a partir de **90001**, para não confundir com as
+do ERP.
 
 Com a aplicação **parada**, a partir de `backend/`:
 
 ```bash
-java -jar target/os-tracker-api-1.0.0.jar --ostracker.ficticio.gerar=true
+java -jar target/rastros-api-1.0.0.jar --rastros.ficticio.gerar=true
 ```
 
 Roda uma vez só: se já houver fictício no banco, não gera de novo. Para **apagar** tudo o
 que foi gerado — e só isso; OS e carros lançados de verdade ficam — suba uma vez com:
 
 ```bash
-java -jar target/os-tracker-api-1.0.0.jar --ostracker.ficticio.apagar=true
+java -jar target/rastros-api-1.0.0.jar --rastros.ficticio.apagar=true
 ```
 
 Tudo o que é fictício leva a marca `[ficticio]` (na abertura da OS e na observação do
@@ -346,7 +397,7 @@ powershell -ExecutionPolicy Bypass -File .\restaurar-backup.ps1
 ```
 
 Sem parâmetros, lista os backups. Com `-Arquivo <nome>`, restaura aquele. O banco atual
-não é apagado: fica guardado ao lado como `ostracker.mv.db.antes-de-restaurar-<data>`.
+não é apagado: fica guardado ao lado como `rastros.mv.db.antes-de-restaurar-<data>`.
 
 ### PostgreSQL
 
@@ -354,7 +405,7 @@ O `PostgresTest` roda a aplicação inteira sobre PostgreSQL 14, então a troca 
 conexão. No PowerShell, antes de subir:
 
 ```bash
-$env:DB_URL = 'jdbc:postgresql://localhost:5432/ostracker'
+$env:DB_URL = 'jdbc:postgresql://localhost:5432/rastros'
 ```
 
 ```bash
@@ -376,13 +427,15 @@ No PostgreSQL o backup é do servidor de banco (`pg_dump`); a tela de backups av
 | Variável | Padrão | Para quê |
 | :--- | :--- | :--- |
 | `SERVER_PORT` | `8080` | porta |
-| `DB_URL`, `DB_USER`, `DB_PASSWORD`, `DB_DRIVER` | H2 em `./data/ostracker` | banco |
+| `DB_URL`, `DB_USER`, `DB_PASSWORD`, `DB_DRIVER` | H2 em `./data/rastros` (um banco antigo `ostracker` é renomeado sozinho) | banco |
 | `JWT_SECRET` | gerada em `data/jwt.secret` | chave dos logins (mín. 32 caracteres) |
 | `JWT_EXP_HORAS` | `12` | validade do login |
 | `CARGA_DEMO` | `true` (`false` no `iniciar-producao`) | dados fictícios num banco novo |
 | `BACKUP_PASTA`, `BACKUP_MANTER`, `BACKUP_CRON` | `./backups`, `30`, `0 30 12 * * MON-FRI` | backup do H2 |
 | `H2_CONSOLE` | `false` | console web do H2 |
-| `CORS_ORIGENS` | `localhost:5173` | só para o front de desenvolvimento |
+| `PERSONIFICACAO` | `true` | fase de teste: o administrador pode "agir como" outro usuário |
+| `CLIMA_CIDADE`, `CLIMA_LATITUDE`, `CLIMA_LONGITUDE` | São Paulo | previsão do tempo do painel |
+| `CORS_ORIGENS` | `localhost:5173` e a extensão | endereços que podem chamar o sistema pelo navegador; **no servidor público, inclua o endereço dele** (ex.: `https://rastros.cloud`), senão a tela abre em branco |
 
 ## Versionamento
 
@@ -419,6 +472,19 @@ nomeado — muitos `checkpoint:` no histórico são sinal de que algo escapou do
 | POST | `/api/fluxos/{id}/despachar` | Operacional do setor; Prateleira/Pátio: Comercial/Diretoria/Admin | Despacho/entrega pela matriz (RF03, RF04) |
 | POST | `/api/fluxos/{id}/cancelar` | Comercial/Diretoria/Admin | Cancela um fluxo |
 | GET | `/api/painel?inicio=&fim=` | Comercial/Diretoria/Admin/Financeiro | Contagens de agora e do período (OS abertas, concluídas, canceladas, saídas por setor) |
+| GET | `/api/painel/agendas?data=` | Comercial/Diretoria/Admin/Financeiro | A agenda do dia de cada adesivador, com o projeto atual de cada um |
+| GET | `/api/painel/acabamento` | Comercial/Diretoria/Admin/Financeiro | OS no Acabamento agora: número, serviço/fluxo, cliente, data da OS e de chegada |
+| GET | `/api/painel/clima` | Comercial/Diretoria/Admin/Financeiro | Previsão do tempo do dia (204 quando não há) |
+| GET | `/api/produtividade/semanal/busca?termo=` | Diretoria/Admin | Busca no relatório, em todos os meses, pelo número da OS ou pelo carro/serviço |
+| POST | `/api/agenda/lote/status` | Comercial/Diretoria/Admin | Muda o estado de vários cards (`{ids, status}`), com um desfazer só |
+| POST | `/api/agenda/{id}/replicas` | Comercial/Diretoria/Admin | A alça do canto: uma cópia ligada do card em cada espaço (`{destinos: [...]}`); espaço ocupado, nenhuma cópia; um desfazer só |
+| POST | `/api/agenda/lote/mover` | Comercial/Diretoria/Admin | Move vários cards juntos (`{itens: [{id, data, adesivadorId, slotInicio, horasEstimadas}]}`); se algum cair em cima de outro card, nada se move |
+| POST | `/api/agenda/lote/excluir` | Comercial/Diretoria/Admin | Exclui vários cards (`{ids}`); um Ctrl+Z traz todos de volta |
+| POST | `/api/admin/personificar/{usuarioId}` | Admin | Fase de teste: devolve uma sessão da pessoa, com o administrador por trás (`PERSONIFICACAO`) |
+| GET | `/api/mudancas` | qualquer usuário logado | Conexão de avisos em tempo real (text/event-stream): "mudou" a cada gravação |
+| GET | `/api/minha-agenda?data=` | quem tem coluna na agenda | Os projetos do dia do próprio adesivador |
+| POST | `/api/minha-agenda/{id}/iniciar` | o dono da coluna | Inicia o projeto; a OS é recebida na Frota em nome dele (agora ou quando chegar) |
+| POST | `/api/minha-agenda/{id}/concluir` | o dono da coluna | Conclui o projeto; terminados os projetos da OS, ela vai da Frota para o Pátio |
 | GET/POST/PUT | `/api/admin/usuarios` | Admin/Financeiro | Gestão de usuários (RF07); a senha definida aqui é provisória; o Financeiro não mexe em administrador |
 | DELETE | `/api/admin/usuarios/{id}` | Admin/Financeiro | Exclui de vez quem não tem histórico; quem tem deve ser desativado |
 | GET/PATCH | `/api/admin/setores` | Admin | Ativa/inativa setores |
@@ -440,7 +506,8 @@ nomeado — muitos `checkpoint:` no histórico são sinal de que algo escapou do
 | PATCH | `/api/agenda/{id}/status` | Comercial/Diretoria/Admin | Marca o andamento do carro |
 | PATCH | `/api/agenda/{id}/mover` | Comercial/Diretoria/Admin | Move ou troca de lugar (arrastar) |
 | PATCH | `/api/agenda/{id}/inicio` | Comercial/Diretoria/Admin | Borda de cima: novo início (`data`, `slotInicio`), o fim fica |
-| PATCH | `/api/agenda/{id}/horas` | Comercial/Diretoria/Admin | Muda as horas estimadas do serviço |
+| PATCH | `/api/agenda/{id}/horas` | Comercial/Diretoria/Admin | Muda as horas estimadas do serviço (a agenda simplificada manda um "pedaço do dia" a mais ou a menos) |
+| POST | `/api/agenda/{id}/partes` | Comercial/Diretoria/Admin | Continua o mesmo serviço noutro lugar: mais uma parte, não uma cópia |
 | PATCH | `/api/agenda/{id}/os` | Comercial/Diretoria/Admin | Liga/desliga o carro de uma OS |
 | POST | `/api/agenda/desfazer` | Comercial/Diretoria/Admin | Desfaz a última alteração da pessoa |
 | GET | `/api/produtividade?inicio=&fim=` | Diretoria/Admin | Indicadores por setor e por adesivador |
@@ -451,8 +518,43 @@ nomeado — muitos `checkpoint:` no histórico são sinal de que algo escapou do
 
 ## Painel
 
-O **Painel** mostra duas coisas: **agora** (OS ativas, aguardando recebimento, em
-processamento, e em cada setor quantas estão na fila e em curso) e o **período escolhido**
+O **Painel** mostra duas coisas: **agora** e o **período escolhido**.
+
+Logo abaixo do título, numa linha só: a **data**, a **hora** (que anda sozinha) e a
+**previsão do tempo** do dia — temperatura agora, tempo, mínima e máxima e chance de chuva.
+A previsão vem do Open-Meteo (gratuito, sem chave; só a localização da empresa é enviada),
+buscada pelo servidor a cada 20 minutos. A cidade padrão é **São Paulo**; para outra, defina
+`CLIMA_CIDADE`, `CLIMA_LATITUDE` e `CLIMA_LONGITUDE`. Sem internet no servidor, a linha
+fica só com data e hora.
+
+**Agora:** OS ativas, aguardando recebimento e em processamento; a **agenda de hoje de cada
+adesivador** — o espelho da Minha agenda de cada um, com o **projeto em que ele está** em
+destaque e o estado dos outros (aguardando, em andamento, concluído, não veio). Cada projeto
+é pintado com a **cor do estado, igual ao card da agenda**, e mostra o horário real de
+**início** e de **conclusão** (não o da agenda, que não tem relógio); e as **OS disponíveis para o Acabamento**, com número, serviço/fluxo, cliente, data da
+OS e quando chegou no setor, a mais antiga primeiro. A *data da OS* é quando ela entrou no
+sistema.
+
+**Tempo real:** o painel se atualiza **sozinho, na hora** — o adesivador inicia ou conclui
+no celular e o painel muda em menos de um segundo, sem F5. O mesmo vale para a agenda e para
+a Minha agenda. Veja *Atualização em tempo real*, abaixo.
+
+## Atualização em tempo real
+
+Cada tela aberta do painel, da agenda e da Minha agenda mantém uma conexão com o servidor
+(`/api/mudancas`, *Server-Sent Events*). Toda gravação confirmada no banco — na agenda,
+num projeto, numa OS — gera um aviso curto ("mudou"), e a tela busca de novo os dados, com
+as permissões de sempre: o aviso não carrega dado nenhum. Várias gravações de uma mesma
+ação viram um aviso só.
+
+* Se a conexão cai (servidor reiniciado, rede), a tela religa sozinha e busca de novo.
+* Por garantia, as telas também buscam a cada 30 s (painel e Minha agenda) ou 1 min (agenda).
+* Na agenda, um aviso que chega enquanto alguém está arrastando ou editando espera a pessoa
+  terminar, para não tirar o trabalho da mão.
+* O sistema roda direto no Tomcat, sem proxy. Se um dia houver um proxy na frente (nginx,
+  IIS), ele precisa deixar `/api/mudancas` sem *buffer*, senão os avisos chegam atrasados.
+
+**Período escolhido:** em cada setor quantas estão na fila e em curso, e
 — **Dia, Semana, Mês ou Ano**, com setas para andar no tempo e *Hoje* para voltar: OS
 abertas, concluídas e canceladas no período e quantas **saíram de cada setor**. A semana é
 cortada no mês, como na agenda. Abre no dia de hoje.
@@ -515,12 +617,22 @@ tabela (com a divisão espera/trabalho) — nenhum número depende de passar o m
 
 A tela **Relatório** lista, semana por semana (ou o **mês inteiro**, para os pontos do mês)
 e adesivador por adesivador, **todo serviço
-que passou pela agenda**: dia, horário, carro, vendedor, OS (com link), situação do
-material, status e score. Bloqueios de falta/férias aparecem recessivos na lista.
+que passou pela agenda**: dia, **início** e **conclusão**, carro, vendedor, OS (com link),
+status e score. Bloqueios de falta/férias aparecem recessivos na lista.
 
-Serviço que **passa do fim do dia** mostra, além do horário, o dia em que termina e em
-quantos dias se estende: `07:30 → QUA 06/03 12:00  3 dias`. O fim de semana é pulado,
-como na agenda.
+Início e conclusão são os **horários reais** — quando o adesivador iniciou e concluiu o
+projeto (ou quando o estado foi mudado na agenda) —, não o horário da agenda, que não tem
+relógio. Quando não foi no dia do serviço, a data vem junto: `17:11` e `24/09 11:02`.
+Serviço ainda não iniciado mostra *—*.
+
+**Busca:** o campo *Buscar* procura em **todos os meses** pelo **número da OS** ou pelo
+**carro/serviço** (a partir de 2 letras, enquanto se digita). Os resultados — com o dia, o
+adesivador e o score, que dá para lançar ali mesmo — tomam o lugar da semana até a busca ser
+limpa; aparecem os 100 mais recentes.
+
+**Sempre alinhado:** todas as tabelas de serviços têm as mesmas colunas nas mesmas larguras,
+então um adesivador embaixo do outro fica tudo alinhado. Só *Carro / serviço* estica, e um
+nome longo quebra linha em vez de empurrar as outras colunas.
 
 No topo, **Pontos da semana** soma os pontos de cada adesivador, do maior para o menor, com
 o total da equipe: *Pontos* conta só os serviços concluídos; *Pontos lançados* conta todos
@@ -545,7 +657,119 @@ Quem lança: Diretoria e Admin (o relatório é deles). Bloqueio de horário nã
 tela (mostra `—`) nem pela API (recusa com 422). Editar o carro na agenda **não toca** no
 score; virar bloqueio o apaga.
 
+## A OS vem do ERP
+
+Na operação real, as OS nascem no ERP da empresa e chegam ao RastrOS por uma extensão de
+navegador que lê o extrato da OS — **número, cliente e serviço** — e a envia com os fluxos
+de cada pedaço de material. A extensão é específica daquele ERP e não faz parte desta versão
+pública; aqui, as OS da demonstração são geradas no mesmo formato (veja *Lançamentos
+fictícios*).
+
 ## Agenda dos adesivadores
+
+### A tela da agenda
+
+A antiga **Agenda por horário** (`/agenda-horarios`), a grade com as faixas reais do dia,
+foi retirada; quem tiver o endereço salvo cai na Agenda.
+
+* **Agenda** (`/agenda`) — a que o pessoal usa, desenhada como a planilha
+  antiga: o dia em **5 espaços de trabalho**, sem relógio, fundo cinza, cards brancos e o
+  **mês inteiro numa página só**, uma semana abaixo da outra. Por baixo cada espaço vale as
+  faixas de horário que caem nele (o 1º do dia é 07:30–09:00, o 2º é 09:00–11:00), mas quem
+  usa a tela não precisa saber disso: escolhe o espaço e pronto.
+
+  No card aparece **só o nome do carro**; vendedor, OS, estado e tamanho aparecem na dica,
+  ao passar o mouse. O card inteiro é **pintado com a cor do estado** (branco enquanto
+  programado), como na legenda da agenda.
+
+  Nela: **dois cliques** renomeiam o carro na própria célula (numa célula vazia, criam um
+  serviço de um espaço ali); a **alça `+` do canto de baixo**, arrastada **para baixo**,
+  **replica** o serviço em cada espaço até onde for solta — o card não cresce: cada espaço
+  ganha uma cópia de um espaço, ligada ao original (veja *cópias*, abaixo); um Ctrl+Z tira
+  todas. Num card antigo de vários espaços, puxar a alça para cima ainda o encolhe; o
+  **botão direito** abre o menu com renomear, abrir (OS, vendedor, observação), o **estado do
+  carro** com as cores da legenda (Programado, Em pátio, Executando, Concluído, Não veio),
+  copiar, recortar, colar, excluir e desfazer. Arrastar, soltar em cima de outro para trocar,
+  Ctrl+C/X/V, Delete e Ctrl+Z funcionam igual à agenda por horário.
+
+  **Colar numa faixa escolhida:** com vários espaços marcados, o serviço colado ocupa a
+  faixa inteira e começa no primeiro espaço dela. Com um espaço só, ele mantém o tamanho
+  do original.
+
+  **O que se guarda é o espaço, não a hora.** Os espaços do dia não valem a mesma coisa
+  (o 1º vale 1h30, das 07:30 às 09:00; o 2º vale 2h, das 09:00 às 11:00). Por isso, ao
+  arrastar ou colar, o serviço mantém **quantos espaços** ocupa, e as horas dele se ajustam
+  ao lugar — o tamanho vai junto com o movimento, numa chamada só, senão a conta era feita
+  no lugar velho e um serviço de um espaço virava dois só de mudar de linha.
+
+  **Nada empurra ninguém.** Diferente da agenda por horário, aqui um serviço que não cabe no
+  espaço livre é **encolhido até caber** — quem está embaixo fica onde está. Por isso a alça
+  só desce quando há um pedaço livre logo abaixo; sem espaço, o item aparece apagado, com a
+  marca *(sem espaço)*.
+
+  **Ler um serviço longo:** o nome aparece no primeiro e no último espaço que ele ocupa,
+  ligados por um trilho pontilhado, e as listras por dentro do card marcam cada espaço.
+
+  **A tela se atualiza sozinha, em tempo real:** quando o adesivador conclui no celular ou
+  outra pessoa mexe na agenda, a tela busca de novo na hora (veja *Atualização em tempo
+  real*), sem apagar nada do que estiver sendo feito — ela espera a vez enquanto alguém
+  arrasta, escolhe espaços ou está com o menu, a janela ou o campo de nome abertos. Por
+  garantia, também busca a cada minuto e quando a pessoa volta para a aba.
+
+  **Largura:** a agenda ocupa a **largura inteira do monitor** — todas as colunas à vista,
+  sem rolar para o lado, e o mais largas possível. Com zoom do navegador (Ctrl + / Ctrl −)
+  ela se ajusta de novo. As **linhas têm sempre a mesma altura**: os cards são desenhados
+  por cima das células e nunca as esticam (nem dois cards na mesma célula). O nome que não
+  cabe — na largura ou na altura — **encolhe** até caber (até 8 px); só um nome que nem
+  assim cabe perde o fim, e aparece inteiro ao passar o mouse.
+
+  **Vários cards de uma vez, como no Excel:** clique num card e **Shift+clique** noutro — ficam
+  escolhidos todos os cards do retângulo entre os dois (linhas e colunas entre eles).
+  **Ctrl+clique** põe ou tira um card de cada vez. Com vários escolhidos, as teclas de estado
+  (B, P, E, C, N, X), o **Delete** e o botão direito valem para todos, e **um Ctrl+Z desfaz o
+  lote inteiro**.
+
+  **Arrastar vários juntos:** com vários escolhidos, arraste qualquer um deles — o grupo
+  inteiro anda o mesmo tanto (as mesmas linhas para cima ou para baixo e as mesmas colunas
+  para o lado), cada card com o seu tamanho em espaços, mantendo a posição de um em relação
+  ao outro. Aqui ninguém troca de lugar: se algum card do grupo cairia em cima de um card de
+  fora, ou sairia do mês na tela, **nada se move** e o aviso diz quem está no caminho. Copiar e recortar continuam com um card só. Esc ou um clique num espaço
+  vazio desfaz a escolha.
+
+  **O dia de hoje** fica marcado: a célula do dia (nome e data, na primeira coluna) fica
+  em laranja, com o selo *Hoje*. O botão **Hoje** volta para o mês atual e desce a página direto
+  até o dia.
+
+  **A grade é estática:** passar o mouse não muda nada. O `+` da célula vazia e a alça do
+  card aparecem quando se clica neles.
+
+  **Indisponível em bloco:** arraste pelos espaços vazios de uma coluna e tecle **N** —
+  eles viram um bloqueio vermelho escrito *INDISPONÍVEL* (férias, falta, atestado). É o
+  `N` que se escrevia na planilha. Ctrl+Z desfaz.
+
+  **Estado pelo teclado:** com o carro selecionado (um clique), a inicial troca o estado —
+  **B** programado, **P** pátio, **E** executando, **C** concluído, **N** não veio, **X**
+  externo. O menu do botão direito mostra a tecla de cada um.
+
+  **Adesivadores (Diretoria e Administrador):** o botão *✎ Adesivadores* abre a janela de
+  incluir, renomear, reordenar (a ordem ali é a ordem das colunas) e remover. Remover não
+  apaga história: as semanas em que a pessoa trabalhou continuam no relatório e na
+  produtividade, e dá para trazer de volta pela mesma janela.
+
+  **Vendedor pelo menu:** junto dos estados, o botão direito lista os vendedores e o
+  *Sem vendedor*, com a marca de quem está no carro hoje.
+
+  A janela da engrenagem, aqui, não repete horário, tamanho nem estado: isso se resolve na
+  própria grade (o lugar do card, a alça do canto e o menu). Ela fica com o tipo da faixa,
+  o nome, a OS, o vendedor e a observação. Na agenda por horário ela continua completa.
+
+  **Cópias (um serviço em vários lugares).** Copiar e colar — ou puxar a alça do canto — **não
+  duplica**: cria uma **cópia ligada**, que pode estar no espaço de baixo, noutro dia ou noutra
+  semana (o carro sai da oficina e volta). As cópias dividem nome, vendedor, OS, observação e
+  estado — mudar num card muda em todos — e cada uma tem só o seu lugar e o seu tamanho.
+  **Selecionando um card que tem cópias, ele e todas as cópias ficam com a borda realçada**,
+  para ver de relance que são o mesmo serviço. Apagando uma cópia, as outras ficam; sobrando
+  uma só, ela volta a ser um serviço comum.
 
 ### Por mês, com a semana cortada na virada
 
@@ -762,7 +986,7 @@ Quem faz o quê:
 
 ### Importar do Google Sheets
 
-A agenda vive no OS Tracker; a planilha é histórico. Por isso a importação **só grava em
+A agenda vive no RastrOS; a planilha é histórico. Por isso a importação **só grava em
 período vazio**: se o sistema já tem agenda em algum dia que a aba cobre, ela é recusada e
 nada é gravado — não há como duplicar carros nem desfazer o que foi remanejado aqui.
 

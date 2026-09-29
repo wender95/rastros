@@ -1,10 +1,10 @@
-# Sobe a API do OS Tracker na porta 8080.
+# Sobe a API do RastrOS na porta 8080.
 # Uso:  .\iniciar-backend.ps1
 
 $ErrorActionPreference = 'Stop'
 $raiz = Split-Path -Parent $MyInvocation.MyCommand.Path
 $backend = Join-Path $raiz 'backend'
-$jar = Join-Path $backend 'target\os-tracker-api-1.0.0.jar'
+$jar = Join-Path $backend 'target\rastros-api-1.0.0.jar'
 
 # JDK e Maven (este so para recompilar): acha onde estiverem.
 . (Join-Path $raiz 'scripts\ambiente.ps1')

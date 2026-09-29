@@ -1,6 +1,6 @@
 # 9. Caminho para Produção
 
-> Diagnóstico de onde o OS Tracker está (atualizado em 22/09/2026) e o que falta para ele
+> Diagnóstico de onde o RastrOS está (atualizado em 22/09/2026) e o que falta para ele
 > ser o sistema oficial da operação, no lugar da planilha. O [roadmap original](./08-roadmap.md)
 > descreve a visão de produto; este documento trata de **colocar essa visão no ar e mantê-la
 > no ar**.
@@ -34,8 +34,8 @@ e acessado por computador e celular — na prática, a fase de piloto (Fase 3) j
 | :--- | :--- |
 | Funcionalidades | Rastreio de OS por setor, matriz de transição, Financeiro que conclui, pátio e prateleira; agenda com arrastar/redimensionar/trocar/recortar/desfazer; *Minha agenda* do adesivador; painel, produtividade e relatório por período |
 | Regras no servidor | Permissões por perfil validadas na API; eventos imutáveis |
-| Banco | Migrações Flyway V1–V9, backup automático antes de cada uma; H2 e **PostgreSQL comprovado em teste** |
-| Qualidade | 126 testes no backend, 22 no frontend; o build de produção falha se um teste falhar |
+| Banco | Migrações Flyway V1–V11, backup automático antes de cada uma; H2 e **PostgreSQL comprovado em teste** |
+| Qualidade | 175 testes no backend, 43 no frontend; o build de produção falha se um teste falhar |
 | Segurança básica | JWT com chave por instalação, BCrypt, senha provisória obrigatória, política de senha, console H2 fechado |
 | Empacotamento | Um único `.jar` com API e tela; pasta portátil com Java embutido para rodar em qualquer Windows |
 | Operação | Sobe com o Windows (`instalar-servico.ps1`), backup diário, restauração por script, feriados cadastráveis |
@@ -159,7 +159,7 @@ participantes preferindo o sistema à planilha.
 - [ ] Planilha passa a **somente leitura** — um único lugar para lançar dados.
 - [ ] Treinar os demais setores.
 - [ ] Primeira semana com você disponível para suporte presencial.
-- [ ] Comunicado da diretoria: a partir da data X, o registro oficial é o OS Tracker.
+- [ ] Comunicado da diretoria: a partir da data X, o registro oficial é o RastrOS.
 
 **Critério de saída:** planilha congelada e um mês de operação só no sistema.
 

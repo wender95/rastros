@@ -12,10 +12,12 @@ import {
   formatarDataHora,
   formatarDuracao,
   rotuloSetor,
-  rotuloStatusAgenda,
+  ChipStatusAgenda,
+  useLegenda,
 } from '../componentes/Ui'
 
 export default function OrdemDetalhe() {
+  useLegenda()
   const { id } = useParams<{ id: string }>()
   const navegar = useNavigate()
   const { usuario } = useAuth()
@@ -79,7 +81,8 @@ export default function OrdemDetalhe() {
         <div>
           <h1>OS {ordem.numeroOsErp}</h1>
           <p>
-            {ordem.cliente ?? 'Cliente não informado'} · aberta por {ordem.criadoPor} em{' '}
+            {ordem.cliente ?? 'Cliente não informado'}
+            {ordem.servico ? ` · ${ordem.servico}` : ''} · aberta por {ordem.criadoPor} em{' '}
             {formatarDataHora(ordem.criadoEm)} · {ordem.fluxos.length} fluxo(s)
           </p>
         </div>
@@ -174,9 +177,7 @@ export default function OrdemDetalhe() {
                     <td>{a.adesivador}</td>
                     <td>{a.descricao}</td>
                     <td>
-                      <span className={`chip ag-${a.status.toLowerCase()}`}>
-                        {rotuloStatusAgenda(a.status)}
-                      </span>
+                      <ChipStatusAgenda status={a.status} etiquetaId={a.etiquetaId} />
                     </td>
                   </tr>
                 ))}
@@ -221,7 +222,7 @@ export default function OrdemDetalhe() {
                 onClick={() =>
                   executar(() =>
                     api.post(`/ordens/${ordem.id}/fluxos`, {
-                      identificador: identificador.trim() || 'Principal',
+                      identificador: identificador.trim() || ordem.servico?.slice(0, 50) || 'Principal',
                       setorInicialId: Number(setorInicialId),
                     }),
                   )

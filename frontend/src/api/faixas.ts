@@ -78,25 +78,6 @@ export function faixasCobertas(
   return posicoesOcupadas(faixas, slotInicio, horas, bloqueada).map((p) => faixaDaPosicao(faixas, p))
 }
 
-/**
- * Horas de trabalho entre duas posições da régua, inclusive. O almoço não soma.
- *
- * É o que traduz "arrastei a borda do card até esta linha" em horas: como as faixas têm
- * durações diferentes (1h e 1h30) e o almoço não conta, não dá para contar linhas.
- */
-export function horasEntre(
-  faixas: FaixaHoraria[],
-  inicio: number,
-  fim: number,
-  bloqueada: Bloqueio = soAlmoco(faixas),
-): number {
-  let total = 0
-  for (let p = inicio; p <= fim; p++) {
-    if (!bloqueada(p)) total += faixaDaPosicao(faixas, p).horas
-  }
-  return total
-}
-
 /** Quantos dias além do primeiro o serviço alcança. */
 export function diasAlcancados(
   faixas: FaixaHoraria[],

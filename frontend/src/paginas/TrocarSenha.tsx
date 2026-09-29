@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { api } from '../api/client'
-import type { Usuario } from '../api/tipos'
+import { api, tokenStorage } from '../api/client'
+import type { LoginResponse } from '../api/tipos'
 import { useAuth } from '../auth/AuthContext'
 import { Aviso } from '../componentes/Ui'
 
@@ -33,12 +33,14 @@ export default function TrocarSenha({ obrigatoria = false }: { obrigatoria?: boo
     setErro(null)
     setEnviando(true)
     try {
-      const atualizado = await api.post<Usuario>('/auth/trocar-senha', { senhaAtual: atual, novaSenha: nova })
+      // Trocar a senha derruba as outras sessões; esta segue com o token novo.
+      const resposta = await api.post<LoginResponse>('/auth/trocar-senha', { senhaAtual: atual, novaSenha: nova })
+      tokenStorage.gravar(resposta.token)
       setPronto(true)
       setAtual('')
       setNova('')
       setConfirmacao('')
-      atualizarUsuario(atualizado)
+      atualizarUsuario(resposta.usuario)
     } catch (e) {
       setErro(e instanceof Error ? e.message : 'Não foi possível trocar a senha.')
     } finally {

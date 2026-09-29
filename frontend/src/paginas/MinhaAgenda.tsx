@@ -1,44 +1,20 @@
 import { useCallback, useEffect, useState } from 'react'
 import { api } from '../api/client'
-import type { SetorNome, StatusAgendamento, StatusFluxo, TipoAgendamento } from '../api/tipos'
-import { Aviso, Carregando, ChipStatusAgenda, rotuloSetor, rotuloVendedor, useVendedores } from '../componentes/Ui'
+import { useMudancas } from '../api/mudancas'
+import {
+  ChipProjeto,
+  Execucao,
+  fraseDoResultado,
+  horaNoDia,
+  situacaoDaOs,
+  textoDasPausas,
+  type AgendaDoDia,
+  type ProjetoDoDia,
+  type ResultadoProjeto,
+} from '../agenda/projetos'
+import { Aviso, Carregando, rotuloSetor, rotuloVendedor, useLegenda, useVendedores } from '../componentes/Ui'
 
 const ATUALIZAR_A_CADA_MS = 30_000
-
-interface OsDoCarro {
-  osId: number
-  numeroOsErp: string
-  cliente: string | null
-  fluxoId: number | null
-  setorAtual: SetorNome | null
-  statusFluxo: StatusFluxo | null
-  recebidoPor: string | null
-  podeReceber: boolean
-  podeEntregar: boolean
-  patioId: number | null
-  devolverPara: SetorNome | null
-}
-
-interface CarroDoDia {
-  agendamentoId: number
-  descricao: string
-  tipo: TipoAgendamento
-  status: StatusAgendamento
-  horarioInicio: string
-  horarioFim: string
-  comecaEm: string
-  terminaEm: string
-  horasEstimadas: number
-  vendedorCodigo: string | null
-  observacao: string | null
-  os: OsDoCarro | null
-}
-
-interface MinhaAgendaDia {
-  adesivador: string
-  data: string
-  carros: CarroDoDia[]
-}
 
 const DIAS = ['domingo', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado']
 const comoData = (iso: string) => new Date(`${iso}T12:00:00`)
@@ -63,40 +39,26 @@ function hojeUtil() {
   return iso(d)
 }
 
-/** Onde está a OS do carro, em palavras. */
-function situacaoDaOs(os: OsDoCarro) {
-  if (!os.setorAtual) return 'sem movimentação'
-  if (os.statusFluxo === 'ENCERRADA') return 'concluída'
-  if (os.statusFluxo === 'CANCELADA') return 'cancelada'
-  const setor = rotuloSetor(os.setorAtual)
-  if (os.setorAtual === 'PATIO' || os.setorAtual === 'PRATELEIRA') return `no ${setor}, aguardando o comercial liberar`
-  if (os.setorAtual === 'FINANCEIRO') return 'no Financeiro'
-  if (os.setorAtual === 'FROTA') {
-    return os.statusFluxo === 'EM_PROCESSAMENTO'
-      ? `na Frota, recebida${os.recebidoPor ? ` por ${os.recebidoPor}` : ''}`
-      : 'chegou na Frota — pronta para receber'
-  }
-  return os.statusFluxo === 'EM_PROCESSAMENTO' ? `em produção: ${setor}` : `a caminho: esperando em ${setor}`
-}
-
 /**
- * A agenda do adesivador, no celular: só os carros dele, dia a dia. É por aqui que a Frota
- * trabalha as OS: receber quando o material chega (o carro vira "Executando"), entregar no
- * Pátio quando fica pronto (vira "Concluído") ou devolver a quem mandou.
+ * A agenda do adesivador, no celular: só os projetos dele, dia a dia. Ele **inicia** e
+ * **conclui** projetos — não recebe nem despacha OS. A OS acompanha sozinha: é recebida na
+ * Frota quando o projeto começa (ou quando chega, se ele já começou) e vai para o Pátio
+ * quando os projetos dela terminam.
  */
 export default function MinhaAgenda() {
   useVendedores() // os nomes chegam do servidor; o hook re-renderiza quando chegam
+  useLegenda() // idem para os nomes e as cores dos status
   const [dia, setDia] = useState(hojeUtil)
-  const [dados, setDados] = useState<MinhaAgendaDia | null>(null)
+  const [dados, setDados] = useState<AgendaDoDia | null>(null)
   const [erro, setErro] = useState<string | null>(null)
   const [feito, setFeito] = useState<string | null>(null)
   const [ocupado, setOcupado] = useState<number | null>(null)
-  /** Carro com a confirmação de entregar no Pátio ou de devolver aberta. */
-  const [confirmando, setConfirmando] = useState<{ id: number; acao: 'entregar' | 'devolver' } | null>(null)
+  /** Projeto com a confirmação de concluir ou de devolver aberta. */
+  const [confirmando, setConfirmando] = useState<{ id: number; acao: 'concluir' | 'devolver' } | null>(null)
 
   const carregar = useCallback(() => {
     api
-      .get<MinhaAgendaDia>(`/minha-agenda?data=${dia}`)
+      .get<AgendaDoDia>(`/minha-agenda?data=${dia}`)
       .then((d) => {
         setDados(d)
         setErro(null)
@@ -109,16 +71,15 @@ export default function MinhaAgenda() {
     const id = window.setInterval(carregar, ATUALIZAR_A_CADA_MS)
     return () => window.clearInterval(id)
   }, [carregar])
+  // Projeto novo ou mudado no escritório aparece na hora.
+  useMudancas(carregar)
 
-  function agir(carro: CarroDoDia, rota: string, corpo: unknown, mensagem: string) {
-    const os = carro.os
-    if (!os?.fluxoId) return
-    setOcupado(carro.agendamentoId)
+  function executar(projeto: ProjetoDoDia, chamada: () => Promise<string>) {
+    setOcupado(projeto.agendamentoId)
     setErro(null)
     setFeito(null)
-    api
-      .post(`/fluxos/${os.fluxoId}/${rota}`, corpo)
-      .then(() => {
+    chamada()
+      .then((mensagem) => {
         setFeito(mensagem)
         setConfirmando(null)
         carregar()
@@ -130,6 +91,31 @@ export default function MinhaAgenda() {
       .finally(() => setOcupado(null))
   }
 
+  const iniciar = (p: ProjetoDoDia) =>
+    executar(p, () =>
+      api.post<ResultadoProjeto>(`/minha-agenda/${p.agendamentoId}/iniciar`, {}).then(fraseDoResultado),
+    )
+
+  const concluir = (p: ProjetoDoDia) =>
+    executar(p, () =>
+      api.post<ResultadoProjeto>(`/minha-agenda/${p.agendamentoId}/concluir`, {}).then(fraseDoResultado),
+    )
+
+  const pausar = (p: ProjetoDoDia) =>
+    executar(p, () =>
+      api.post(`/minha-agenda/${p.agendamentoId}/pausar`, {}).then(() => `"${p.descricao}" pausado. Toque em Retomar para voltar.`),
+    )
+
+  const retomar = (p: ProjetoDoDia) =>
+    executar(p, () => api.post(`/minha-agenda/${p.agendamentoId}/retomar`, {}).then(() => `"${p.descricao}" retomado.`))
+
+  const devolver = (p: ProjetoDoDia) =>
+    executar(p, () =>
+      api
+        .post(`/fluxos/${p.os!.fluxoId}/devolver`, {})
+        .then(() => `OS ${p.os!.numeroOsErp} devolvida para ${rotuloSetor(p.os!.devolverPara!)}.`),
+    )
+
   const hoje = hojeUtil()
   const d = comoData(dia)
 
@@ -137,7 +123,7 @@ export default function MinhaAgenda() {
     <div className="movimentar minha-agenda">
       <div className="movimentar-topo">
         <h1>Minha agenda</h1>
-        <button className="botao botao-secundario botao-grande" onClick={carregar}>
+        <button className="botao botao-secundario botao-grande" onClick={carregar} aria-label="Atualizar">
           ↻
         </button>
       </div>
@@ -166,101 +152,135 @@ export default function MinhaAgenda() {
       {!dados && !erro ? (
         <Carregando texto="Carregando sua agenda..." />
       ) : dados && dados.carros.length === 0 ? (
-        <p className="movimentar-vazio">Nenhum carro na sua agenda neste dia.</p>
+        <p className="movimentar-vazio">Nenhum projeto na sua agenda neste dia.</p>
       ) : (
         <div className="movimentar-lista">
-          {dados?.carros.map((c) => (
-            <div
-              key={c.agendamentoId}
-              className={`os-cartao carro-do-dia${c.tipo === 'INDISPONIVEL' ? ' carro-bloqueio' : ''}${confirmando?.id === c.agendamentoId ? ' os-cartao-aberto' : ''}`}
-            >
-              <div className="os-identificacao">
-                <div className="carro-horario">
-                  {c.horarioInicio} – {c.horarioFim}
-                  {c.tipo !== 'INDISPONIVEL' && <ChipStatusAgenda status={c.status} />}
+          {dados?.carros.map((c) => {
+            const aberto = confirmando?.id === c.agendamentoId
+            return (
+              <div
+                key={c.agendamentoId}
+                className={[
+                  'os-cartao carro-do-dia',
+                  c.tipo === 'INDISPONIVEL' && 'carro-bloqueio',
+                  c.atual && 'projeto-atual',
+                  aberto && 'os-cartao-aberto',
+                ]
+                  .filter(Boolean)
+                  .join(' ')}
+              >
+                <div className="os-identificacao">
+                  {c.atual && <div className="projeto-atual-selo">▶ Você está neste projeto</div>}
+                  {/* Sem relógio da agenda: o que aparece é quando o projeto começou e terminou de verdade. */}
+                  {c.tipo !== 'INDISPONIVEL' && (
+                    <div className="carro-horario">
+                      <ChipProjeto status={c.status} etiquetaId={c.etiquetaId} />
+                      <Execucao projeto={c} dia={dia} />
+                    </div>
+                  )}
+                  {c.pausadoDesde && (
+                    <div className="projeto-pausado" title={textoDasPausas(c.pausas ?? [], dia)}>
+                      ⏸ Pausado desde {horaNoDia(c.pausadoDesde, dia)}
+                    </div>
+                  )}
+                  <div className="os-numero">{c.descricao}</div>
+                  {(c.comecaEm !== dia || c.terminaEm !== dia) && (
+                    <div className="os-detalhe os-suave">
+                      {c.comecaEm !== dia && `agendado para ${curto(c.comecaEm)}`}
+                      {c.comecaEm !== dia && c.terminaEm !== dia && ' · '}
+                      {c.terminaEm !== dia && `segue até ${curto(c.terminaEm)}`}
+                    </div>
+                  )}
+                  {c.os ? (
+                    <div className="os-detalhe">
+                      OS {c.os.numeroOsErp}
+                      {c.os.cliente && ` · ${c.os.cliente}`}
+                      {c.os.servico && <div className="os-descricao">{c.os.servico}</div>}
+                      <div className="os-suave">{situacaoDaOs(c.os)}</div>
+                    </div>
+                  ) : (
+                    c.tipo !== 'INDISPONIVEL' && <div className="os-detalhe os-suave">Sem OS vinculada</div>
+                  )}
+                  {c.vendedorCodigo && <div className="os-detalhe os-suave">Vendedor: {rotuloVendedor(c.vendedorCodigo)}</div>}
+                  {c.observacao && !c.observacao.includes('[ficticio]') && (
+                    <div className="os-detalhe os-suave">{c.observacao}</div>
+                  )}
                 </div>
-                <div className="os-numero">{c.descricao}</div>
-                {(c.comecaEm !== dia || c.terminaEm !== dia) && (
-                  <div className="os-detalhe os-suave">
-                    {c.comecaEm !== dia && `começou ${curto(c.comecaEm)}`}
-                    {c.comecaEm !== dia && c.terminaEm !== dia && ' · '}
-                    {c.terminaEm !== dia && `segue até ${curto(c.terminaEm)}`}
+
+                {!aberto && (c.podeIniciar || c.podeConcluir || c.podePausar || c.podeRetomar || c.os?.devolverPara) && (
+                  <div className="os-botoes">
+                    {c.podeIniciar && (
+                      <button
+                        className="botao botao-grande botao-receber"
+                        disabled={ocupado === c.agendamentoId}
+                        onClick={() => iniciar(c)}
+                      >
+                        ▶ Iniciar projeto
+                      </button>
+                    )}
+                    {c.podeRetomar && (
+                      <button
+                        className="botao botao-grande botao-receber"
+                        disabled={ocupado === c.agendamentoId}
+                        onClick={() => retomar(c)}
+                      >
+                        ▶ Retomar projeto
+                      </button>
+                    )}
+                    {c.podePausar && (
+                      <button
+                        className="botao botao-secundario botao-grande"
+                        disabled={ocupado === c.agendamentoId}
+                        onClick={() => pausar(c)}
+                      >
+                        ⏸ Pausar
+                      </button>
+                    )}
+                    {c.podeConcluir && (
+                      <button
+                        className="botao botao-grande"
+                        onClick={() => setConfirmando({ id: c.agendamentoId, acao: 'concluir' })}
+                      >
+                        ✓ Concluir projeto
+                      </button>
+                    )}
+                    {c.os?.devolverPara && (
+                      <button
+                        className="botao botao-secundario botao-grande botao-devolver"
+                        onClick={() => setConfirmando({ id: c.agendamentoId, acao: 'devolver' })}
+                      >
+                        ↩ Devolver OS para {rotuloSetor(c.os.devolverPara)}
+                      </button>
+                    )}
                   </div>
                 )}
-                {c.os ? (
-                  <div className="os-detalhe">
-                    OS {c.os.numeroOsErp}
-                    {c.os.cliente && ` · ${c.os.cliente}`}
-                    <div className="os-suave">{situacaoDaOs(c.os)}</div>
+
+                {aberto && (
+                  <div className="os-escolha">
+                    <p className="os-pergunta">
+                      {confirmando.acao === 'concluir'
+                        ? c.os
+                          ? `"${c.descricao}" terminou? A OS ${c.os.numeroOsErp} vai para o Pátio quando todos os projetos dela estiverem concluídos.`
+                          : `"${c.descricao}" terminou?`
+                        : `Devolver a OS ${c.os!.numeroOsErp} para ${rotuloSetor(c.os!.devolverPara!)}? O projeto volta a aguardar.`}
+                    </p>
+                    <div className="os-destinos">
+                      <button
+                        className={`botao botao-grande ${confirmando.acao === 'concluir' ? 'botao-receber' : 'botao-devolver'}`}
+                        disabled={ocupado === c.agendamentoId}
+                        onClick={() => (confirmando.acao === 'concluir' ? concluir(c) : devolver(c))}
+                      >
+                        Sim, {confirmando.acao === 'concluir' ? 'concluir' : 'devolver'}
+                      </button>
+                      <button className="botao botao-secundario botao-grande" onClick={() => setConfirmando(null)}>
+                        Não
+                      </button>
+                    </div>
                   </div>
-                ) : (
-                  c.tipo !== 'INDISPONIVEL' && <div className="os-detalhe os-suave">Sem OS vinculada</div>
-                )}
-                {c.vendedorCodigo && <div className="os-detalhe os-suave">Vendedor: {rotuloVendedor(c.vendedorCodigo)}</div>}
-                {c.observacao && !c.observacao.includes('[ficticio]') && (
-                  <div className="os-detalhe os-suave">{c.observacao}</div>
                 )}
               </div>
-              {c.os?.podeReceber && (
-                <div className="os-botoes">
-                  <button
-                    className="botao botao-grande botao-receber"
-                    disabled={ocupado === c.agendamentoId}
-                    onClick={() =>
-                      agir(c, 'receber', {}, `OS ${c.os!.numeroOsErp} recebida — ${c.descricao} em execução.`)
-                    }
-                  >
-                    ✓ Receber OS {c.os.numeroOsErp}
-                  </button>
-                </div>
-              )}
-              {c.os && (c.os.podeEntregar || c.os.devolverPara) && confirmando?.id !== c.agendamentoId && (
-                <div className="os-botoes">
-                  {c.os.podeEntregar && (
-                    <button
-                      className="botao botao-grande"
-                      onClick={() => setConfirmando({ id: c.agendamentoId, acao: 'entregar' })}
-                    >
-                      Pronto — entregar no Pátio →
-                    </button>
-                  )}
-                  {c.os.devolverPara && (
-                    <button
-                      className="botao botao-secundario botao-grande botao-devolver"
-                      onClick={() => setConfirmando({ id: c.agendamentoId, acao: 'devolver' })}
-                    >
-                      ↩ Devolver para {rotuloSetor(c.os.devolverPara)}
-                    </button>
-                  )}
-                </div>
-              )}
-              {c.os && confirmando?.id === c.agendamentoId && (
-                <div className="os-escolha">
-                  <p className="os-pergunta">
-                    {confirmando.acao === 'entregar'
-                      ? `${c.descricao} está pronto? A OS ${c.os.numeroOsErp} vai para o Pátio e o carro fica concluído.`
-                      : `Devolver a OS ${c.os.numeroOsErp} para ${rotuloSetor(c.os.devolverPara!)}?`}
-                  </p>
-                  <div className="os-destinos">
-                    <button
-                      className={`botao botao-grande ${confirmando.acao === 'entregar' ? 'botao-receber' : 'botao-devolver'}`}
-                      disabled={ocupado === c.agendamentoId}
-                      onClick={() =>
-                        confirmando.acao === 'entregar'
-                          ? agir(c, 'despachar', { setorDestinoId: c.os!.patioId }, `OS ${c.os!.numeroOsErp} entregue no Pátio — ${c.descricao} concluído.`)
-                          : agir(c, 'devolver', {}, `OS ${c.os!.numeroOsErp} devolvida para ${rotuloSetor(c.os!.devolverPara!)}.`)
-                      }
-                    >
-                      Sim, {confirmando.acao === 'entregar' ? 'entregar' : 'devolver'}
-                    </button>
-                    <button className="botao botao-secundario botao-grande" onClick={() => setConfirmando(null)}>
-                      Não
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-          ))}
+            )
+          })}
         </div>
       )}
     </div>

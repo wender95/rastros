@@ -16,3 +16,6 @@ backend/rodando/
 
 # ID da planilha real da agenda (usado pelo importar-agenda.ps1): fica so na maquina
 planilha-agenda.id
+
+# ambiente local do desenvolvedor (ex.: apontar o Vite para uma copia do sistema)
+.env.local

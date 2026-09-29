@@ -9,7 +9,7 @@ o requisito, ele está indicado.
 
 | # | Requisito | Garantia |
 | :-- | :--- | :--- |
-| RF01 | **Abrir OS** com o número do ERP, com um ou mais fluxos paralelos, cada um começando num setor de entrada válido (Comercial, Diretoria, Admin). | `AcessosTest`, `MovimentacaoTest` |
+| RF01 | **OS manual**: abrir a OS com o número do ERP quando a importação pela extensão não for possível, com um ou mais fluxos paralelos, cada um começando num setor de entrada válido (Comercial, Diretoria, Admin). | `AcessosTest`, `MovimentacaoTest` |
 | RF02 | **Meu setor**: o operador vê só as OS que chegaram para receber e as que já estão no setor, sem digitar número de OS. Atualiza sozinha a cada 30 s. | `MovimentacaoTest` |
 | RF03 | **Receber** grava quem e quando; só depois de receber é possível despachar ou devolver. | `MovimentacaoTest` |
 | RF04 | **Despachar** só para os destinos da matriz de transição; **devolver** para o setor de onde a OS veio, quando esse setor não é um destino normal. | `MovimentacaoTest` |
@@ -26,9 +26,15 @@ o requisito, ele está indicado.
 | RF10 | **Arrastar** (mouse e dedo), **redimensionar** pelas duas bordas, **trocar de lugar**, copiar/**recortar**/colar, excluir com Delete e **desfazer** (25 passos, 24 h, persistido). | `AgendaServiceTest`, `ReempilharTest`, `HistoricoAgendaTest` |
 | RF11 | **Carga semanal** por adesivador contando só as horas que caem na semana, contra a capacidade (44 h). | `AgendaServiceTest` |
 | RF12 | **Vínculo carro ↔ OS**, com o andamento do material; a agenda muda o status do carro quando a Frota recebe, entrega ou devolve a OS. | `MovimentacaoTest`, `MinhaAgendaTest` |
-| RF13 | **Minha agenda** do adesivador, no celular: só os carros dele, dia a dia, com Receber, Entregar no Pátio e Devolver. | `MinhaAgendaTest` |
+| RF13 | **Minha agenda** do adesivador, no celular: só os projetos dele, dia a dia. Ele **inicia e conclui** projetos: iniciar recebe a OS na Frota em nome dele (na hora ou quando ela chegar); concluir manda a OS para o Pátio quando todos os projetos dela terminam. | `MinhaAgendaTest`, `ProjetosHttpTest` |
 | RF14 | **Editar adesivadores** (Diretoria/Admin): adicionar, renomear, reordenar, remover e restaurar colunas, sem perder histórico. | `ColunasAgendaTest` |
 | RF15 | **Importar** o cronograma do Google Sheets (abas mensais), só em período vazio. | `ImportadorAgendaTest`, `PlanilhaGabaritoTest` |
+| RF16 | **Agenda (a do dia a dia)**: a semana em 5 espaços de trabalho por dia, sem relógio; dois cliques renomeiam o carro e o botão direito abre o menu. A antiga grade por faixa de horário foi retirada (`/agenda-horarios` leva à Agenda). | `blocos.test.ts` |
+| RF17 | Na agenda simplificada **ninguém é empurrado**: o serviço que não cabe no espaço livre é encolhido até caber, e o nome se repete no primeiro e no último espaço que ele ocupa. Arrastar e colar levam o tamanho junto com o movimento, para o serviço ocupar os mesmos espaços no lugar novo. | `blocos.test.ts`, `MoverComTamanhoTest` |
+| RF18 | Agenda: **mês inteiro numa página**, duração pela alça `+` do canto (só para baixo) e troca de estado (que pinta o card todo) pelo botão direito. No card, só o nome; o resto na dica do mouse. | `blocos.test.ts` |
+| RF19 | **Serviço em partes**: colar continua o mesmo serviço noutro dia ou semana. Nome, vendedor, OS, observação e estado são do serviço inteiro; lugar e tamanho, de cada parte. | `PartesAgendaTest` |
+| RF20 | Agenda: escolher vários espaços e teclar **N** marca tudo como indisponível; o vendedor também se troca pelo botão direito. | `AgendaServiceTest` |
+| RF21 | **Painel ao vivo**: a agenda de hoje de cada adesivador, com o projeto atual em destaque e o estado dos outros, e as OS disponíveis para o Acabamento (número, serviço/fluxo, cliente, data da OS e de chegada). | `MinhaAgendaTest`, `ProjetosHttpTest` |
 
 ### Indicadores
 

@@ -1,4 +1,4 @@
-# Importa o cronograma do Google Sheets para a agenda do OS Tracker.
+# Importa o cronograma do Google Sheets para a agenda do RastrOS.
 #
 # Uso:
 #   .\importar-agenda.ps1 -Meses Novembro,Dezembro
@@ -6,7 +6,7 @@
 #   .\importar-agenda.ps1 -CompletarDiasAusentes
 #   .\importar-agenda.ps1 -Meses Setembro,Outubro -APartirDe 2026-09-21   <- so dali em diante
 #
-# A agenda vive no OS Tracker; a planilha e historico. Por isso a importacao so grava em
+# A agenda vive no RastrOS; a planilha e historico. Por isso a importacao so grava em
 # periodo vazio: se o sistema ja tem agenda em algum dia que a aba cobre, ela e recusada
 # e nada e gravado. Nao ha como duplicar nem desfazer o que foi remanejado aqui.
 #
@@ -39,7 +39,7 @@ if (-not $PlanilhaId) {
     throw 'Informe a planilha: -PlanilhaId <id>, a variavel PLANILHA_AGENDA_ID ou o arquivo planilha-agenda.id ao lado deste script.'
 }
 $utf8 = [System.Text.UTF8Encoding]::new($false)
-$temp = Join-Path $env:TEMP "ostracker-agenda"
+$temp = Join-Path $env:TEMP "rastros-agenda"
 New-Item -ItemType Directory -Force -Path $temp | Out-Null
 
 if (-not $Senha) {

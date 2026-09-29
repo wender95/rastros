@@ -44,8 +44,9 @@ O carro pode estar **ligado à OS** que produz o material. Com isso:
 * a agenda mostra se o material do carro está **pronto** ou **em produção**;
 * quando a Frota **recebe** a OS, o carro passa a *Executando*; quando **entrega no Pátio**,
   passa a *Concluído*; se **devolve**, volta a *Programado* — sem ninguém mexer na agenda;
-* cada adesivador trabalha pela aba **Minha agenda**, no celular: vê só os próprios carros
-  do dia e recebe, entrega ou devolve a OS de cada um por ali.
+* cada adesivador trabalha pela aba **Minha agenda**, no celular: vê só os próprios projetos
+  do dia e **inicia e conclui** cada um — a OS é recebida na Frota quando o projeto começa (ou
+  quando chega, se ele já começou) e vai para o Pátio quando os projetos dela terminam.
 
 ## 2.4 O que o processo antigo não mostrava
 

@@ -2,6 +2,8 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 import type { ReactNode } from 'react'
 import { api, aoExigirTrocaDeSenha, aoPerderSessao, tokenStorage } from '../api/client'
 import type { LoginResponse, Usuario } from '../api/tipos'
+import { esquecerSessaoAdmin } from './sessaoAdmin'
+import { esquecerSetorAtivo } from './setorAtivo'
 
 interface AuthContextValue {
   usuario: Usuario | null
@@ -20,6 +22,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const sair = useCallback(() => {
     tokenStorage.limpar()
+    esquecerSessaoAdmin() // agindo como alguém, sair encerra também a sessão guardada do admin
+    esquecerSetorAtivo()
     setUsuario(null)
   }, [])
 
@@ -43,6 +47,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const entrar = useCallback(async (usuario: string, senha: string) => {
     const resposta = await api.post<LoginResponse>('/auth/login', { usuario, senha })
+    // Entrou de novo: uma sessão de admin que sobrou de antes (a que caiu) não vale mais.
+    esquecerSessaoAdmin()
+    esquecerSetorAtivo()
     tokenStorage.gravar(resposta.token)
     setUsuario(resposta.usuario)
   }, [])

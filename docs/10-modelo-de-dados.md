@@ -34,7 +34,7 @@ perfis ─┐                         setores ◀── transicoes_permitidas (o
 | `setores` | Criação, Impressão, Recorte, Preparação, Acabamento, Frota, Prateleira, Pátio, Financeiro | `nome`, `ativo` |
 | `usuarios` | Contas de acesso | `login`, `nome`, `email` (opcional), `senha_hash` (BCrypt), `perfil_id`, `setor_id`, `ativo`, `trocar_senha` |
 | `transicoes_permitidas` | A matriz de transição (origem nula = entrada comercial) | `setor_origem`, `setor_destino` |
-| `ordens_servico` | A OS do ERP | `numero_os_erp`, `cliente`, `criado_por`, `criado_em`, `cancelada` |
+| `ordens_servico` | A OS do ERP | `numero_os_erp`, `cliente`, `servico` (o que a OS manda fazer), `criado_por`, `criado_em`, `cancelada` |
 | `fluxos_os` | Cada item da OS andando pelos setores (estado atual) | `os_id`, `identificador_fluxo`, `setor_atual_id`, `setor_anterior_id`, `status_atual`, `entrou_no_setor_em`, `recebido_por_id`, `recebido_em`, `encerrado`, `encerrado_em` |
 | `eventos_movimentacao` | **A trilha imutável**: tudo que aconteceu | `fluxo_id`, `tipo_evento` (CRIACAO, RECEBIMENTO, DESPACHO, RETORNO, ENTREGA, CONCLUSAO, CANCELAMENTO), `setor_origem_id`, `setor_destino_id`, `usuario_id`, `data_hora`, `observacao` |
 
@@ -46,7 +46,7 @@ tempo sai de `eventos_movimentacao`.
 | Tabela | Para que serve | Colunas principais |
 | :--- | :--- | :--- |
 | `adesivadores` | As colunas da agenda (adesivadores, Encaixe, Noturno) | `nome`, `tipo`, `ordem`, `ativo`, `usuario_id` (vínculo opcional com a conta) |
-| `agendamentos` | Cada carro ou bloqueio na grade | `data`, `adesivador_id`, `slot_inicio` (faixa 1–9), `horas_estimadas`, `tipo` (SERVICO/INDISPONIVEL), `descricao`, `vendedor_codigo`, `status`, `score`, `os_id`, `observacao` |
+| `agendamentos` | Cada carro ou bloqueio na grade | `data`, `adesivador_id`, `slot_inicio` (faixa 1–9), `horas_estimadas`, `tipo` (SERVICO/INDISPONIVEL), `descricao`, `vendedor_codigo`, `status`, `score`, `os_id`, `observacao`, `grupo_id` (partes do mesmo serviço) |
 | `historico_agenda` | Retrato de um trecho da agenda antes de cada alteração — o **Desfazer** (25 passos por pessoa, 24 h) | `usuario_id`, `descricao`, retrato serializado |
 
 Um carro não guarda "até que horas vai": o fim sai de `slot_inicio` + `horas_estimadas`

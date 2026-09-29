@@ -1,4 +1,4 @@
-# Coloca o OS Tracker em producao nesta maquina, num passo so.
+# Coloca o RastrOS em producao nesta maquina, num passo so.
 #
 # Uso (PowerShell ABERTO COMO ADMINISTRADOR):
 #   .\colocar-em-producao.ps1
@@ -28,19 +28,19 @@ if (-not $admin) {
     throw 'Abra o PowerShell como administrador (botao direito > Executar como administrador) e rode de novo.'
 }
 
-$jar = Join-Path $raiz 'backend\target\os-tracker-api-1.0.0.jar'
+$jar = Join-Path $raiz 'backend\target\rastros-api-1.0.0.jar'
 if (-not (Test-Path $jar)) { throw "Pacote nao encontrado. Rode antes: .\gerar-pacote.ps1" }
 
 Write-Host "`n1/5  Parando o sistema que estiver rodando por fora..." -ForegroundColor Cyan
-Stop-ScheduledTask -TaskName 'OS Tracker' -ErrorAction SilentlyContinue
+Stop-ScheduledTask -TaskName 'RastrOS' -ErrorAction SilentlyContinue
 Get-CimInstance Win32_Process -Filter "Name = 'java.exe'" |
-    Where-Object { $_.CommandLine -like '*os-tracker-api*' } |
+    Where-Object { $_.CommandLine -like '*rastros-api*' } |
     ForEach-Object { Stop-Process -Id $_.ProcessId -Force; Write-Host "     parado (processo $($_.ProcessId))" }
 Start-Sleep -Seconds 2
 
 Write-Host "2/5  Liberando a porta $Porta no firewall..." -ForegroundColor Cyan
-if (-not (Get-NetFirewallRule -DisplayName 'OS Tracker' -ErrorAction SilentlyContinue)) {
-    New-NetFirewallRule -DisplayName 'OS Tracker' -Direction Inbound -Protocol TCP -LocalPort $Porta -Action Allow | Out-Null
+if (-not (Get-NetFirewallRule -DisplayName 'RastrOS' -ErrorAction SilentlyContinue)) {
+    New-NetFirewallRule -DisplayName 'RastrOS' -Direction Inbound -Protocol TCP -LocalPort $Porta -Action Allow | Out-Null
     Write-Host '     regra criada'
 } else {
     Write-Host '     regra ja existia'
@@ -56,7 +56,7 @@ foreach ($i in 1..90) {
     } catch { }
     Start-Sleep -Seconds 1
 }
-if (-not $ok) { throw "O sistema nao respondeu em 90s. Veja o log em backend\logs\ostracker.log" }
+if (-not $ok) { throw "O sistema nao respondeu em 90s. Veja o log em backend\logs\rastros.log" }
 Write-Host '     no ar'
 
 if (-not $SemImportar) {
@@ -76,4 +76,4 @@ Write-Host "     na rede:         http://$($env:COMPUTERNAME):$Porta"
 Get-NetIPAddress -AddressFamily IPv4 |
     Where-Object { $_.IPAddress -notlike '127.*' -and $_.IPAddress -notlike '169.254.*' } |
     ForEach-Object { Write-Host "                      http://$($_.IPAddress):$Porta" }
-Write-Host "`nBackups diarios em backend\backups  |  logs em backend\logs\ostracker.log"
+Write-Host "`nBackups diarios em backend\backups  |  logs em backend\logs\rastros.log"

@@ -34,6 +34,11 @@
 * **RN13 — A agenda acompanha a Frota.** Frota recebe a OS → carro *Executando*; entrega no
   Pátio → *Concluído*; devolve → *Programado*. Status marcados à mão (*Não veio*, *Externo*,
   *Concluído*) não são alterados.
+* **RN13b — Ligar a OS depois também acerta o carro.** As regras acima valem no momento do
+  movimento e não olham para trás; um carro ligado à OS **depois** que o material já foi para
+  o Pátio ficava *Programado* para sempre. Agora, ao vincular a OS (ou ao criar o carro já
+  com ela), o carro assume o estado dela: material fora da produção → *Concluído*; na mão da
+  Frota agora → *Executando*. Quem foi marcado à mão continua intocado.
 * **RN14 — Remover adesivador não apaga história.** Quem tem carro de hoje em diante não sai;
   quem só tem passado sai da agenda mas continua nas semanas em que trabalhou.
 * **RN15 — O score se lança no relatório.** A pontuação é o peso do que foi entregue; o total

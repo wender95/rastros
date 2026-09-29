@@ -9,7 +9,7 @@ import java.text.Normalizer
  * O login passa a ser um nome de usuario, e o e-mail vira contato opcional.
  *
  * Cada conta que ja existe ganha como usuario a parte do e-mail antes do @
- * (admin@ostracker.com -> admin). Se dois e-mails derem o mesmo nome, o segundo ganha um
+ * (admin@rastros.cloud -> admin). Se dois e-mails derem o mesmo nome, o segundo ganha um
  * numero (financeiro, financeiro2). As senhas nao mudam.
  */
 @Suppress("ClassName")

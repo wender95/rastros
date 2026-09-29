@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
 import { api } from '../api/client'
+import { ouvirMudancas } from '../api/mudancas'
 import type { SetorNome, StatusAgendamento, StatusFluxo, TipoEvento } from '../api/tipos'
 
 const ROTULO_SETOR: Record<SetorNome, string> = {
@@ -84,40 +85,131 @@ export function formatarDuracao(segundos: number) {
 }
 
 /**
- * Vendedores da agenda. O código de uma letra é o que vem do cronograma e é o que fica
- * gravado; o nome é só a exibição. A lista vem do servidor, montada dos usuários
- * cadastrados (a primeira letra do nome) — nenhum nome fica no código.
+ * Vendedores da agenda. O código (a letra do cronograma) é o que fica gravado no card; o
+ * nome é só a exibição. A lista é cadastrada na própria agenda (✎ Vendedores). Os removidos
+ * vêm também (ativo = false): os cards antigos ainda mostram o nome, mas eles não aparecem
+ * para escolher.
  */
 export interface Vendedor {
+  id: number
   codigo: string
   nome: string
+  ativo: boolean
 }
 
-let vendedores: Vendedor[] = []
-let carregando: Promise<Vendedor[]> | null = null
+/**
+ * Um status da legenda da agenda. Os do sistema (com `chave`) têm regra por trás e só mudam
+ * de nome e cor; os criados na agenda (`chave` nula) são etiquetas de um serviço que ainda
+ * não começou e podem ser removidos.
+ */
+export interface StatusDaLegenda {
+  id: number
+  chave: StatusAgendamento | null
+  nome: string
+  cor: string
+  ordem: number
+  doSistema: boolean
+}
 
-/** Busca a lista uma vez por sessão; chamadas seguintes reaproveitam. */
-export function carregarVendedores(): Promise<Vendedor[]> {
-  if (!carregando) {
-    carregando = api
+/** A legenda de fábrica: vale até a do servidor chegar (e se ela não vier). */
+const LEGENDA_PADRAO: StatusDaLegenda[] = (
+  [
+    ['PROGRAMADO', 'Programado', '#94a3b8'],
+    ['EM_PATIO', 'Em pátio', '#0284c7'],
+    ['EXECUTANDO', 'Executando', '#d97706'],
+    ['CONCLUIDO', 'Concluído', '#16a34a'],
+    ['NAO_VEIO', 'Não veio', '#dc2626'],
+    ['EXTERNO', 'Externo', '#7c3aed'],
+  ] as [StatusAgendamento, string, string][]
+).map(([chave, nome, cor], i) => ({ id: -(i + 1), chave, nome, cor, ordem: i + 1, doSistema: true }))
+
+let vendedores: Vendedor[] = []
+let legenda: StatusDaLegenda[] = LEGENDA_PADRAO
+let buscaVendedores: Promise<Vendedor[]> | null = null
+let buscaLegenda: Promise<StatusDaLegenda[]> | null = null
+const aoMudarVendedores = new Set<(l: Vendedor[]) => void>()
+const aoMudarLegenda = new Set<(l: StatusDaLegenda[]) => void>()
+
+/** Busca a lista uma vez por sessão; `forcar` busca de novo (depois de editar). */
+export function carregarVendedores(forcar = false): Promise<Vendedor[]> {
+  if (!buscaVendedores || forcar) {
+    buscaVendedores = api
       .get<Vendedor[]>('/vendedores')
-      .then((lista: Vendedor[]) => (vendedores = lista))
+      .then((lista: Vendedor[]) => {
+        vendedores = lista
+        aoMudarVendedores.forEach((f) => f(lista))
+        return lista
+      })
       .catch(() => {
-        carregando = null // tenta de novo na próxima tela
+        buscaVendedores = null // tenta de novo na próxima tela
         return vendedores
       })
   }
-  return carregando
+  return buscaVendedores
 }
 
-/** A lista de vendedores, e um re-render quando ela chega do servidor. */
+export function carregarLegenda(forcar = false): Promise<StatusDaLegenda[]> {
+  if (!buscaLegenda || forcar) {
+    buscaLegenda = api
+      .get<StatusDaLegenda[]>('/status-agenda')
+      .then((lista: StatusDaLegenda[]) => {
+        legenda = lista
+        pintarLegenda(lista)
+        aoMudarLegenda.forEach((f) => f(lista))
+        return lista
+      })
+      .catch(() => {
+        buscaLegenda = null
+        return legenda
+      })
+  }
+  return buscaLegenda
+}
+
+/**
+ * Alguém editou a legenda ou os vendedores (nesta ou noutra tela): busca de novo. Liga na
+ * primeira tela que usa a lista, e desliga quando nenhuma usa mais.
+ */
+let pararDeOuvir: (() => void) | null = null
+function acompanharEdicoes() {
+  if (pararDeOuvir) return
+  pararDeOuvir = ouvirMudancas((assuntos) => {
+    if (assuntos !== '' && !assuntos.split(',').includes('legenda')) return
+    if (aoMudarLegenda.size > 0) carregarLegenda(true)
+    if (aoMudarVendedores.size > 0) carregarVendedores(true)
+  })
+}
+function largarEdicoes() {
+  if (aoMudarLegenda.size > 0 || aoMudarVendedores.size > 0 || !pararDeOuvir) return
+  pararDeOuvir()
+  pararDeOuvir = null
+}
+
+/** A lista de vendedores (todos; filtre `ativo` para escolher), com re-render quando muda. */
 export function useVendedores(): Vendedor[] {
   const [lista, setLista] = useState(vendedores)
   useEffect(() => {
-    let ativo = true
-    carregarVendedores().then((l) => ativo && setLista(l))
+    aoMudarVendedores.add(setLista)
+    acompanharEdicoes()
+    carregarVendedores().then(setLista)
     return () => {
-      ativo = false
+      aoMudarVendedores.delete(setLista)
+      largarEdicoes()
+    }
+  }, [])
+  return lista
+}
+
+/** A legenda de status, com re-render quando muda — as telas que mostram status chamam. */
+export function useLegenda(): StatusDaLegenda[] {
+  const [lista, setLista] = useState(legenda)
+  useEffect(() => {
+    aoMudarLegenda.add(setLista)
+    acompanharEdicoes()
+    carregarLegenda().then(setLista)
+    return () => {
+      aoMudarLegenda.delete(setLista)
+      largarEdicoes()
     }
   }, [])
   return lista
@@ -127,28 +219,52 @@ export function useVendedores(): Vendedor[] {
 export const rotuloVendedor = (codigo: string | null) =>
   codigo ? (vendedores.find((v) => v.codigo === codigo.toUpperCase())?.nome ?? codigo) : ''
 
-const ROTULO_STATUS_AGENDA: Record<StatusAgendamento, string> = {
-  PROGRAMADO: 'Programado',
-  EM_PATIO: 'Em pátio',
-  EXECUTANDO: 'Executando',
-  CONCLUIDO: 'Concluído',
-  NAO_VEIO: 'Não veio',
-  EXTERNO: 'Externo',
+/** O status que o card mostra: o criado na agenda (se ainda existe) ou o do sistema. */
+export function statusDaLegenda(status: StatusAgendamento, etiquetaId?: number | null): StatusDaLegenda | undefined {
+  const etiqueta = etiquetaId != null ? legenda.find((s) => s.id === etiquetaId) : undefined
+  return etiqueta ?? legenda.find((s) => s.chave === status) ?? LEGENDA_PADRAO.find((s) => s.chave === status)
 }
 
-export const STATUS_AGENDA: StatusAgendamento[] = [
-  'PROGRAMADO',
-  'EM_PATIO',
-  'EXECUTANDO',
-  'CONCLUIDO',
-  'NAO_VEIO',
-  'EXTERNO',
-]
+/** A classe de cor do card/chip: `ag-executando`, ou `ag-e12` para um status criado na agenda. */
+export function classeStatus(status: StatusAgendamento, etiquetaId?: number | null) {
+  const s = statusDaLegenda(status, etiquetaId)
+  return s && !s.doSistema ? `ag-e${s.id}` : `ag-${status.toLowerCase()}`
+}
 
-export const rotuloStatusAgenda = (status: StatusAgendamento) => ROTULO_STATUS_AGENDA[status] ?? status
+export const rotuloStatusAgenda = (status: StatusAgendamento, etiquetaId?: number | null) =>
+  statusDaLegenda(status, etiquetaId)?.nome ?? status
 
-export function ChipStatusAgenda({ status }: { status: StatusAgendamento }) {
-  return <span className={`chip ag-${status.toLowerCase()}`}>{rotuloStatusAgenda(status)}</span>
+/** O nome de fábrica de um status do sistema: se foi renomeado, as telas usam o nome novo. */
+export const nomePadraoDoStatus = (status: StatusAgendamento) =>
+  LEGENDA_PADRAO.find((s) => s.chave === status)?.nome
+
+export function ChipStatusAgenda({ status, etiquetaId }: { status: StatusAgendamento; etiquetaId?: number | null }) {
+  return <span className={`chip ${classeStatus(status, etiquetaId)}`}>{rotuloStatusAgenda(status, etiquetaId)}</span>
+}
+
+/**
+ * As cores da legenda viram regras de CSS: a cor forte é a barra; o fundo e o texto saem
+ * dela. Os do sistema com a cor de fábrica ficam com o CSS feito à mão (styles.css).
+ */
+function pintarLegenda(lista: StatusDaLegenda[]) {
+  const regras = lista
+    .filter((s) => !s.doSistema || LEGENDA_PADRAO.find((p) => p.chave === s.chave)?.cor !== s.cor.toLowerCase())
+    .map((s) => {
+      const classe = s.doSistema ? `ag-${s.chave!.toLowerCase()}` : `ag-e${s.id}`
+      const fundo = `color-mix(in srgb, ${s.cor} 16%, white)`
+      return (
+        `.${classe}{background:${fundo};color:color-mix(in srgb, ${s.cor} 55%, black);--barra:${s.cor};}` +
+        `.card-simples.${classe},.painel-projetos li.${classe}{background-color:${fundo};}` +
+        `.menu-cor.${classe}{background:${s.cor};}`
+      )
+    })
+  let estilo = document.getElementById('cores-da-legenda')
+  if (!estilo) {
+    estilo = document.createElement('style')
+    estilo.id = 'cores-da-legenda'
+    document.head.appendChild(estilo)
+  }
+  estilo.textContent = regras.join('\n')
 }
 
 /** Frase curta com a situação do material da OS vinculada ao carro. */

@@ -16,21 +16,23 @@ financeiro. Sem rastreabilidade:
 
 ## 1.2 O que o sistema faz
 
-O **OS Tracker** é o sistema de chão de fábrica da empresa:
+O **RastrOS** é o sistema de chão de fábrica da empresa:
 
 1. **Rastreio de OS por setor** — cada OS entra pelo comercial e anda de setor em setor
    pelos caminhos permitidos. Cada passo (abrir, receber, despachar, devolver, concluir,
    cancelar) é um evento imutável com quem, quando, de onde e para onde.
-2. **Agenda dos adesivadores** — a grade semanal que substituiu a planilha: horários reais,
-   arrastar, redimensionar, trocar de lugar, copiar/recortar/colar, desfazer. Cada carro pode
-   estar ligado à OS que produz o material, e a agenda acompanha a Frota sozinha.
+2. **Agenda dos adesivadores** — a grade que substituiu a planilha, no formato dela: o dia
+   em 5 horários, sem relógio, com o mês inteiro numa página. Arrastar, esticar pela alça,
+   trocar de lugar, copiar/colar (que divide o serviço em partes), desfazer. Cada carro pode
+   estar ligado à OS que produz o material, e a agenda acompanha a Frota sozinha. A grade
+   antiga, por faixa de horário, continua disponível **só para o administrador**.
 3. **Indicadores dentro do sistema** — painel por dia/semana/mês/ano, produtividade por
    setor e por pessoa, relatório com a pontuação (score) de cada adesivador. Tudo calculado
    na hora a partir dos eventos, contando só o horário comercial.
 
 ## 1.3 Premissas e limites
 
-* **O ERP continua sendo o sistema oficial** de vendas e faturamento. O OS Tracker não
+* **O ERP continua sendo o sistema oficial** de vendas e faturamento. O RastrOS não
   emite nada: o número da OS vem do ERP e é informado ao abrir o fluxo.
 * **Eventos são fatos, não se editam.** O histórico é a fonte de verdade; os indicadores
   são derivados dele na leitura, nunca guardados em paralelo.

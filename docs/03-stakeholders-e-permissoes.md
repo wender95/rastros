@@ -11,10 +11,16 @@ tela só espelha o que a API permite (teste `AcessosTest`).
 | **Financeiro** | Financeiro | Tela **Meu setor** do Financeiro (recebe e é o **único que conclui**), painel, cadastro de usuários e redefinição de senha — sem criar nem alterar administrador |
 | **Operacional** | Funcionários dos setores | Só a tela **Meu setor**: receber, devolver e despachar as OS do próprio setor |
 
+## Duas agendas
+
+A **Agenda** (`/agenda`) é a do dia a dia: o dia em 5 espaços de trabalho, como a planilha antiga.
+A antiga **Agenda por horário** (`/agenda-horarios`) foi retirada; o endereço leva à Agenda.
+
 ## Casos especiais
 
 * **Frota** — quem é da Frota e tem uma coluna na agenda **não vê a tela Meu setor**: trabalha
-  só pela **Minha agenda**, onde recebe, entrega no Pátio ou devolve a OS de cada carro seu.
+  só pela **Minha agenda**, onde inicia e conclui os próprios projetos (a OS acompanha
+  sozinha) e, se preciso, devolve o material com defeito.
 * **Adesivador** — a coluna da agenda é da pessoa pelo nome (a coluna *ANDRE* é do usuário
   *Andre*). Quem tem coluna e é de outro setor vê a própria agenda, mas não recebe pela Frota.
 * **Prateleira e Pátio** não têm operador: só o Comercial, a Diretoria e o Administrador tiram

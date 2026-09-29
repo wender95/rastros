@@ -1,7 +1,7 @@
 package db.migration
 
-import com.ostracker.domain.Agendamento
-import com.ostracker.domain.NormalizacaoAgenda
+import com.rastros.domain.Agendamento
+import com.rastros.domain.NormalizacaoAgenda
 import org.flywaydb.core.api.migration.BaseJavaMigration
 import org.flywaydb.core.api.migration.Context
 import org.slf4j.LoggerFactory

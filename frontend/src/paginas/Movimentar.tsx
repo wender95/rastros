@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useState } from 'react'
 import { api } from '../api/client'
 import type { ItemMovimentacao, Movimentacao } from '../api/tipos'
+import { useAuth } from '../auth/AuthContext'
+import { escolherSetor, setorEmUso, setoresDeTrabalho } from '../auth/setorAtivo'
 import { Aviso, Carregando, formatarDuracao, rotuloSetor } from '../componentes/Ui'
 
 /** Recarrega sozinha: uma OS despachada por outro setor aparece sem ninguém apertar nada. */
@@ -14,6 +16,14 @@ const ATUALIZAR_A_CADA_MS = 30_000
  * Nada para digitar: o número da OS vem na lista, e o destino é escolhido num botão.
  */
 export default function Movimentar() {
+  const { usuario } = useAuth()
+  /** Quem é de mais de um setor escolhe aqui em qual está trabalhando. */
+  const opcoes = usuario ? setoresDeTrabalho(usuario) : []
+  const [setorId, setSetorId] = useState<number | null>(() => {
+    const emUso = usuario ? setorEmUso(usuario) : null
+    // O principal pode ser a Frota do adesivador (que trabalha pela Minha agenda).
+    return opcoes.some((o) => o.id === emUso?.id) ? emUso!.id : (opcoes[0]?.id ?? null)
+  })
   const [dados, setDados] = useState<Movimentacao | null>(null)
   const [erro, setErro] = useState<string | null>(null)
   const [feito, setFeito] = useState<string | null>(null)
@@ -22,6 +32,8 @@ export default function Movimentar() {
   const [ocupado, setOcupado] = useState<number | null>(null)
 
   const carregar = useCallback(() => {
+    // O servidor lê o setor escolhido em cada pedido (e confere se é mesmo da pessoa).
+    if (setorId) escolherSetor(setorId)
     api
       .get<Movimentacao>('/movimentacao')
       .then((d) => {
@@ -29,7 +41,7 @@ export default function Movimentar() {
         setErro(null)
       })
       .catch((e) => setErro(e instanceof Error ? e.message : 'Não foi possível carregar.'))
-  }, [])
+  }, [setorId])
 
   useEffect(() => {
     carregar()
@@ -60,7 +72,29 @@ export default function Movimentar() {
   return (
     <div className="movimentar">
       <div className="movimentar-topo">
-        <h1>{dados ? rotuloSetor(dados.setor) : 'Meu setor'}</h1>
+        {opcoes.length > 1 ? (
+          <h1>
+            <select
+              className="seletor-setor"
+              aria-label="Setor em que você está trabalhando"
+              value={setorId ?? ''}
+              onChange={(e) => {
+                setDados(null)
+                setFeito(null)
+                setAberta(null)
+                setSetorId(Number(e.target.value))
+              }}
+            >
+              {opcoes.map((o) => (
+                <option key={o.id} value={o.id}>
+                  {rotuloSetor(o.nome)}
+                </option>
+              ))}
+            </select>
+          </h1>
+        ) : (
+          <h1>{dados ? rotuloSetor(dados.setor) : 'Meu setor'}</h1>
+        )}
         <button className="botao botao-secundario botao-grande" onClick={carregar}>
           ↻ Atualizar
         </button>

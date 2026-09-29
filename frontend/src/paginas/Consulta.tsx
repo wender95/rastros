@@ -22,6 +22,9 @@ const STATUS: { valor: '' | StatusFluxo; rotulo: string }[] = [
 ]
 
 /** RF05 - consulta de OS: por número, cliente ou fluxo, e filtrando por status e pelo setor onde a OS está. */
+/** O mesmo limite do servidor (FluxoService.LIMITE_DA_LISTA). */
+const LIMITE_DA_LISTA = 300
+
 export default function Consulta() {
   const navegar = useNavigate()
   const [termo, setTermo] = useState('')
@@ -96,6 +99,13 @@ export default function Consulta() {
           <Vazio>Nenhum fluxo encontrado para os filtros informados.</Vazio>
         ) : (
           <div className="tabela-rolagem">
+            {/* Sem busca, o servidor manda só as mais recentes (as antigas se acham pela busca). */}
+            {!termo.trim() && fluxos.length >= LIMITE_DA_LISTA && (
+              <p className="subtitulo aviso-limite">
+                Mostrando os {LIMITE_DA_LISTA} fluxos mais recentes. Para os mais antigos, busque pelo número da OS,
+                cliente ou serviço.
+              </p>
+            )}
             <table>
               <thead>
                 <tr>
@@ -117,6 +127,7 @@ export default function Consulta() {
                   >
                     <td>
                       <strong>{fluxo.numeroOsErp}</strong>
+                      {fluxo.servico && <small className="servico-da-os">{fluxo.servico}</small>}
                     </td>
                     <td>{fluxo.identificadorFluxo}</td>
                     <td>{fluxo.cliente ?? '—'}</td>

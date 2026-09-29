@@ -127,12 +127,68 @@ a {
   color: #94a3b8;
 }
 
+/* Fase de teste: o administrador escolhe por quem agir. */
+.agir-como {
+  max-width: 190px;
+  padding: 5px 8px;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  background: #1e293b;
+  color: #e2e8f0;
+  font-size: 13px;
+}
+
+/* Faixa em toda tela enquanto o administrador age como outra pessoa: impossível esquecer. */
+.faixa-agindo-como {
+  position: sticky;
+  top: 0;
+  z-index: 19;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+  padding: 8px 20px;
+  background: #f59e0b;
+  color: #1c1917;
+  font-size: 14px;
+}
+
+.faixa-agindo-como-acoes {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.agir-como-erro {
+  max-width: 260px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: #fee2e2;
+  color: #991b1b;
+  font-size: 12px;
+}
+
+.faixa-agindo-como .agir-como {
+  background: #fffbeb;
+  color: #1c1917;
+  border-color: #b45309;
+}
+
 .conteudo {
   flex: 1;
   width: 100%;
   max-width: 1180px;
   margin: 0 auto;
   padding: 26px 20px 60px;
+}
+
+/* A agenda ocupa a largura toda do monitor: as colunas crescem com a tela, e com zoom
+   (Ctrl + / Ctrl -) elas se ajustam de novo, sempre todas à vista. */
+.conteudo-largo {
+  max-width: none;
+  padding-left: 14px;
+  padding-right: 14px;
 }
 
 .cabecalho-pagina {
@@ -917,10 +973,92 @@ textarea:focus {
   font-size: 13px;
 }
 
+/* Todas as tabelas de serviços com as mesmas larguras: um adesivador embaixo do outro, as
+   colunas ficam alinhadas. Só o carro/serviço estica; nome longo quebra linha. Em tela
+   estreita a tabela mantém a largura mínima e rola para o lado. */
+.tabela-servicos,
+.tabela-pontos {
+  width: 100%;
+  table-layout: fixed;
+  min-width: 760px;
+}
+
+.tabela-servicos th,
+.tabela-servicos td {
+  padding: 8px 10px;
+  vertical-align: middle;
+}
+
+.tabela-servicos td {
+  overflow-wrap: break-word;
+}
+
+.rel-col-dia {
+  width: 104px;
+}
+
+.rel-col-dia-ano {
+  width: 132px;
+}
+
+.rel-col-adesivador {
+  width: 120px;
+}
+
+.rel-col-hora {
+  width: 76px;
+}
+
+/* A conclusão pode vir com a data junto ("24/09 11:02"). */
+.rel-col-hora-longa {
+  width: 104px;
+}
+
+.rel-col-os {
+  width: 92px;
+}
+
+.rel-col-status {
+  width: 124px;
+}
+
+.rel-col-score {
+  width: 92px;
+}
+
+.rel-col-numero {
+  width: 132px;
+}
+
+.tabela-pontos {
+  min-width: 600px;
+}
+
 /* Bloqueio (falta, férias) não é serviço: fica recessivo na lista. */
 .tabela-relatorio .linha-bloqueio {
   background: var(--superficie-2);
   color: var(--texto-suave);
+}
+
+/* Busca do relatório: em todos os meses, pelo número da OS ou pelo carro/serviço. */
+.busca-relatorio {
+  display: flex;
+  gap: 8px;
+  margin: 12px 0 16px;
+}
+
+.busca-relatorio input {
+  flex: 1;
+  max-width: 520px;
+  padding: 9px 12px;
+  font-size: 14px;
+  border: 1px solid var(--borda);
+  border-radius: 8px;
+  background: var(--superficie);
+}
+
+.relatorio-busca .relatorio-cabecalho {
+  margin-bottom: 10px;
 }
 
 .rel-vendedor {
@@ -1826,6 +1964,19 @@ textarea:focus {
   letter-spacing: -0.5px;
 }
 
+/* Mais de um setor: o título vira a escolha do setor em que a pessoa está. */
+.seletor-setor {
+  max-width: 100%;
+  padding: 4px 36px 4px 10px;
+  border: 2px solid var(--borda, #cbd5e1);
+  border-radius: 10px;
+  background: var(--superficie, #fff);
+  color: inherit;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
 .movimentar-secao {
   display: flex;
   align-items: center;
@@ -2058,6 +2209,41 @@ textarea:focus {
   margin-bottom: 14px;
 }
 
+/* Editar status e vendedores: a cor do status e o codigo do vendedor */
+.lista-adesivadores input.cor-status,
+.adicionar-adesivador input.cor-status {
+  width: 38px;
+  height: 32px;
+  padding: 2px;
+  flex: none;
+  border: 1px solid var(--borda);
+  border-radius: 6px;
+  background: #fff;
+  cursor: pointer;
+}
+
+.sem-remover {
+  width: 84px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--texto-suave);
+}
+
+.codigo-vendedor {
+  min-width: 34px;
+  padding: 2px 6px;
+  text-align: center;
+  font-weight: 700;
+  border-radius: 6px;
+  background: var(--primaria-clara);
+  color: var(--primaria);
+}
+
+.adicionar-adesivador input.campo-codigo {
+  flex: none;
+  width: 84px;
+}
+
 .titulo-removidos {
   font-size: 15px;
   margin: 8px 0 2px;
@@ -2151,6 +2337,249 @@ textarea:focus {
 
 .patio-coluna .os-botoes {
   justify-content: flex-end;
+}
+
+/* ------------------------------------------------------ projetos (Minha agenda, painel) */
+
+/* O projeto em que o adesivador esta agora: borda na cor de "em andamento". */
+.projeto-atual {
+  border: 2px solid #d97706;
+  box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.15);
+}
+
+.projeto-atual-selo {
+  margin-bottom: 6px;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  color: #92400e;
+}
+
+/* Linha do topo do painel: data, hora e previsão do tempo, discretas, numa linha só. */
+.linha-do-dia {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 14px;
+  margin: 4px 0 0;
+  color: var(--texto-suave);
+  font-size: 14px;
+}
+
+.linha-do-dia > span + span::before {
+  content: '·';
+  margin-right: 14px;
+  color: #cbd5e1;
+}
+
+.linha-do-dia-hora {
+  color: var(--texto);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.painel-bloco {
+  margin-top: 18px;
+}
+
+.painel-bloco + .painel-periodo {
+  margin-top: 24px;
+}
+
+/* O Noturno: cartao escuro, so no dia em que tem servico, com quem vai fazer cada um. */
+.painel-adesivador.painel-noturno {
+  background: #1e1b4b;
+  border-color: #312e81;
+}
+
+.painel-noturno .painel-adesivador-topo strong,
+.painel-noturno .painel-adesivador-topo span {
+  color: #e0e7ff;
+}
+
+.painel-atribuidos {
+  font-size: 12px;
+  font-weight: 700;
+  color: #3730a3;
+}
+
+/* As telas de TV: tudo um pouco maior, para ler de longe. Em tela cheia, sai o topo. */
+.tela-tv-topo {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+
+.tela-tv-topo h1 {
+  margin: 0;
+  font-size: 28px;
+}
+
+.tela-tv-conteudo {
+  zoom: 1.2;
+}
+
+.tela-tv-conteudo .painel-adesivadores {
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+}
+
+html:fullscreen .topo,
+html:fullscreen .faixa-agindo-como {
+  display: none;
+}
+
+html:fullscreen .tela-tv-topo .botao {
+  opacity: 0.25;
+}
+
+/* Um cartao por adesivador, lado a lado; no celular, um embaixo do outro. */
+.painel-adesivadores {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 12px;
+}
+
+.painel-adesivador {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  background: var(--superficie-2);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio);
+  min-width: 0;
+}
+
+.painel-adesivador-topo {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.painel-adesivador-topo strong {
+  font-size: 15px;
+  overflow-wrap: break-word;
+}
+
+.painel-adesivador-topo span {
+  flex-shrink: 0;
+  font-size: 12px;
+  color: var(--texto-suave);
+}
+
+.painel-atual {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 10px;
+  background: #fef3c7;
+  border: 3px solid #ea580c;
+  border-radius: 8px;
+  color: #000;
+}
+
+.painel-atual strong {
+  font-size: 15px;
+  overflow-wrap: break-word;
+}
+
+.painel-atual small {
+  font-size: 12px;
+}
+
+.painel-atual-rotulo {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+}
+
+.painel-atual-vazio {
+  background: var(--superficie);
+  border: 1px dashed var(--borda);
+  color: var(--texto-suave);
+  font-size: 13px;
+}
+
+.painel-projetos {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Cada projeto como o card da agenda: fundo na cor do estado e a barrinha na esquerda. */
+.painel-projetos li {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 6px 8px 6px 13px;
+  border: 1px solid #94a3b8;
+  border-radius: 4px;
+  color: #000;
+  font-size: 13px;
+  overflow: hidden;
+}
+
+/* Letra preta em tudo dentro dos cards (a cor do status fica no fundo e na barrinha). */
+.painel-projetos li *,
+.painel-atual:not(.painel-atual-vazio) * {
+  color: #000;
+}
+
+.painel-projetos li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 5px;
+  background: var(--barra, #94a3b8);
+}
+
+.painel-projeto-nome {
+  min-width: 0;
+  overflow-wrap: break-word;
+}
+
+.painel-projeto-nome {
+  font-weight: 600;
+}
+
+.painel-projeto-linha {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  font-size: 12px;
+  color: #334155;
+}
+
+/* Inicio e conclusao reais do projeto (Minha agenda, painel). */
+.execucao {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 2px 8px;
+  font-variant-numeric: tabular-nums;
+}
+
+.execucao-vazia {
+  color: var(--texto-suave);
+  font-style: italic;
+}
+
+/* A descricao da OS (o servico que veio do ERP), logo abaixo do numero. */
+.os-descricao {
+  margin-top: 2px;
+  font-size: 15px;
+  color: var(--texto-suave);
 }
 
 .os-servico {
@@ -2346,15 +2775,22 @@ textarea:focus {
   font-weight: 500;
 }
 
-/* Marca no topo e no login. */
-.marca-logo {
+/* Marca: a logo da empresa que usa o sistema (branca, fundo transparente), no topo e no
+   login. Sem logo configurada, o nome dela. */
+.marca-empresa {
   display: block;
   height: 32px;
   width: auto;
 }
 
+.marca-empresa-nome {
+  color: #fff;
+  font-size: 20px;
+  font-weight: 800;
+}
+
 @media (max-width: 800px) {
-  .marca-logo {
+  .marca-empresa {
     height: 26px;
   }
 }
@@ -2364,14 +2800,19 @@ textarea:focus {
   padding: 26px 30px;
   border-radius: 14px 14px 0 0;
   background: #0f172a;
-  color: #fff;
   text-align: center;
-  font-size: 30px;
-  letter-spacing: -0.5px;
+  line-height: 0;
 }
 
-.login-marca span {
-  color: #60a5fa;
+.login-marca .marca-empresa {
+  display: inline-block;
+  max-width: 100%;
+  height: 64px;
+}
+
+.login-marca .marca-empresa-nome {
+  font-size: 30px;
+  line-height: 1.2;
 }
 
 /* Painel: escolha do período e os dois grupos (agora / período) */
@@ -2414,4 +2855,1048 @@ textarea:focus {
 .carro-do-dia .os-destinos .botao,
 .patio-coluna .os-cartao .os-destinos .botao {
   flex: 1 1 140px;
+}
+
+/* ------------------------------------------------------------------ agenda simplificada
+
+   A agenda do jeito da planilha: sem horário, o dia em 5 pedaços iguais e a semana
+   inteira na tela. Fundo cinza, cards brancos e as divisões dos 5 pedaços bem marcadas —
+   inclusive por dentro de um card longo, para dar para contar quantos ele ocupa. */
+
+/* Cabeçalho e navegação enxutos: cada pixel aqui é uma linha da semana que cabe na tela. */
+.pagina-simples {
+  margin-top: -16px;
+}
+
+.cabecalho-simples {
+  margin-bottom: 4px;
+}
+
+.cabecalho-simples h1 {
+  font-size: 22px;
+}
+
+.cabecalho-simples p {
+  font-size: 12px;
+  margin-top: 2px;
+}
+
+.pagina-simples .nav-mes {
+  margin-bottom: 8px;
+  gap: 6px;
+}
+
+.quadro-simples {
+  background: var(--neutro-claro);
+  border: 1px solid #cbd5e1;
+  border-radius: var(--raio);
+  padding: 4px;
+  overflow-x: auto;
+}
+
+.quadro-simples + .quadro-simples {
+  margin-top: 14px;
+}
+
+.titulo-semana {
+  padding: 2px 4px 5px;
+  font-size: 13px;
+  color: #334155;
+}
+
+.titulo-semana strong {
+  color: var(--texto);
+}
+
+.mes-atual {
+  min-width: 128px;
+  text-align: center;
+  font-size: 15px;
+}
+
+.grade-simples {
+  --altura-linha: 24px;
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  table-layout: fixed;
+  font-size: 12px;
+}
+
+.grade-simples th,
+.grade-simples td {
+  border-right: 1px solid #cbd5e1;
+  border-bottom: 1px solid #cbd5e1;
+}
+
+.grade-simples thead th {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  background: #0f172a;
+  color: #fff;
+  padding: 3px 6px;
+  text-align: center;
+  line-height: 1.25;
+}
+
+.grade-simples .coluna-nome {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+}
+
+.grade-simples .coluna-carga {
+  display: block;
+  font-size: 10px;
+  font-weight: 600;
+  color: #cbd5e1;
+}
+
+.grade-simples .col-dia {
+  width: 58px;
+  background: #1e293b;
+  color: #fff;
+  vertical-align: middle;
+  text-align: center;
+}
+
+/* As duas colunas da esquerda também ficam baixas: o espaçamento padrão das tabelas
+   esticaria a linha e a semana deixaria de caber na tela. */
+.grade-simples tbody th {
+  padding: 0 2px;
+}
+
+.grade-simples .col-num {
+  width: 26px;
+  background: #e2e8f0;
+  color: #475569;
+  font-size: 11px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.grade-simples .dia-nome {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.grade-simples .dia-data {
+  display: block;
+  font-size: 11px;
+  color: #cbd5e1;
+}
+
+/* Cada linha é um dos 5 pedaços do dia; a última fecha o dia com uma linha grossa. */
+.grade-simples tbody tr {
+  height: var(--altura-linha);
+}
+
+.grade-simples tbody tr.fim-do-dia > * {
+  border-bottom: 3px solid #0f172a;
+}
+
+.grade-simples tbody td {
+  background: #d5dde6;
+  padding: 2px;
+  vertical-align: top;
+  height: var(--altura-linha);
+}
+
+.grade-simples td.vazia {
+  cursor: pointer;
+  overflow: hidden;
+}
+
+/* A linha tem altura fixa: os cards são desenhados por cima da célula ocupada e não a
+   esticam. O que não couber encolhe a letra (a agenda mede e reduz), nunca a linha. */
+.grade-simples td.ocupada {
+  position: relative;
+  padding: 0;
+}
+
+.celula-cards {
+  position: absolute;
+  inset: 1px;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.celula-cards > .card-simples {
+  flex: 1 1 0;
+  min-height: 0;
+  height: auto;
+  padding-top: 0;
+  padding-bottom: 0;
+  line-height: 1.15;
+}
+
+/* O dia de hoje: só a célula do dia (nome e data, na primeira coluna) fica em laranja,
+   com o selo "Hoje" - o resto da linha continua como os outros dias. */
+.grade-simples .col-dia.dia-hoje {
+  background: #d97706;
+}
+
+.grade-simples .col-dia.dia-hoje .dia-data {
+  color: #fff;
+  font-weight: 700;
+}
+
+.grade-simples .selo-hoje {
+  display: inline-block;
+  margin-bottom: 3px;
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: #fff;
+  color: #92400e;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+}
+
+.grade-simples td.vazia .mais {
+  display: none;
+  color: #64748b;
+  font-size: 13px;
+  padding-left: 4px;
+}
+
+/* A grade é estática: passar o mouse não muda nada. O "+" da célula vazia e a alça do
+   card aparecem quando o item é selecionado, como na planilha. */
+.grade-simples td.vazia.selecionada .mais {
+  display: inline;
+}
+
+.grade-simples td.selecionada {
+  background: var(--primaria-clara);
+  box-shadow: inset 0 0 0 2px var(--primaria);
+}
+
+.grade-simples td.alvo {
+  background: #bfdbfe;
+  box-shadow: inset 0 0 0 2px var(--primaria);
+}
+
+/* O card é branco; o status vira uma barra colorida na lateral. As listras por dentro
+   marcam onde termina cada um dos 5 pedaços do dia. */
+.card-simples {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  height: 100%;
+  padding: 1px 5px 1px 9px;
+  border: 1px solid #94a3b8;
+  border-radius: 4px;
+  color: var(--texto);
+  cursor: pointer;
+  overflow: hidden;
+}
+
+/* O card inteiro pintado com a cor do estado, como na legenda da agenda. Programado é o
+   branco de sempre — é o estado em que quase tudo nasce. */
+.card-simples.ag-programado,
+.painel-projetos li.ag-programado {
+  background-color: #fff;
+}
+
+.card-simples.ag-em_patio,
+.painel-projetos li.ag-em_patio {
+  background-color: #e0f2fe;
+}
+
+.card-simples.ag-executando,
+.painel-projetos li.ag-executando {
+  background-color: #fef3c7;
+}
+
+.card-simples.ag-concluido,
+.painel-projetos li.ag-concluido {
+  background-color: #dcfce7;
+}
+
+.card-simples.ag-nao_veio,
+.painel-projetos li.ag-nao_veio {
+  background-color: #fee2e2;
+}
+
+.card-simples.ag-externo,
+.painel-projetos li.ag-externo {
+  background-color: #ede9fe;
+}
+
+.linha-card {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.card-simples:not(.card-alto) .linha-card {
+  flex: 1;
+}
+
+/* No card alto sobra altura: o nome fica com a linha inteira e a OS desce para a de baixo. */
+.card-simples.card-alto .linha-card {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0;
+}
+
+/* Trilho tracejado ligando o começo ao fim de um serviço que ocupa vários horários. */
+.trilho {
+  flex: 1;
+  min-height: 0;
+  margin: 1px 0 1px 3px;
+  border-left: 2px dotted #94a3b8;
+}
+
+.card-simples .nome-fim {
+  flex: 0 0 auto;
+  font-size: 11px;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.card-simples.card-alto {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0;
+  padding-top: 2px;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent 0 calc(var(--altura-linha) - 2px),
+    #8aa0b5 calc(var(--altura-linha) - 2px) calc(var(--altura-linha) - 1px),
+    transparent calc(var(--altura-linha) - 1px) var(--altura-linha)
+  );
+}
+
+/* A divisa entre um dia e o outro nunca some: um serviço que segue no dia seguinte a
+   desenha por dentro do próprio card, no lugar exato da linha da grade. */
+.card-simples .linha-dia {
+  position: absolute;
+  left: -9px;
+  right: -5px;
+  height: 3px;
+  background: #0f172a;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.card-simples::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 5px;
+  background: var(--barra, #94a3b8);
+}
+
+/* Com vendedor, a barra da esquerda alarga um pouco e leva o código dele (a letra do
+   cronograma). Em card de mais de um espaço, o código fica no alto, junto do nome. */
+/* A sigla tem o mesmo tamanho de letra do nome (R e P não se confundem); a barra alarga
+   conforme a quantidade de letras (--sigla, posta pelo card). */
+.card-simples.com-vendedor {
+  --largura-sigla: calc(var(--sigla, 1) * 9px + 7px);
+  padding-left: calc(var(--largura-sigla) + 4px);
+}
+
+.card-simples.com-vendedor::before {
+  width: var(--largura-sigla);
+}
+
+.card-simples .vendedor-na-barra {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: var(--largura-sigla);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: 0;
+  white-space: nowrap;
+  text-shadow: 0 0 2px rgba(15, 23, 42, 0.7);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.card-simples.card-alto .vendedor-na-barra {
+  bottom: auto;
+  height: calc(var(--altura-linha, 22px) - 2px);
+}
+
+/* A barra da esquerda é a alça: segurando nela (mãozinha), o card — ou todos os
+   selecionados — se move. No resto do card e nos espaços vazios, clicar e arrastar
+   escolhe células, como no Excel. Sem vendedor a barra fica estreita, mas dá para pegar. */
+.card-simples {
+  --largura-sigla: 10px;
+  padding-left: calc(var(--largura-sigla) + 4px);
+  cursor: cell;
+}
+
+.card-simples::before {
+  width: var(--largura-sigla);
+}
+
+.card-simples .alca-arrastar {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: var(--largura-sigla);
+  cursor: grab;
+  z-index: 2;
+}
+
+.card-simples .alca-arrastar:hover {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+.card-simples .alca-arrastar:active {
+  cursor: grabbing;
+}
+
+.grade-simples td.vazia {
+  cursor: cell;
+}
+
+/* Arrastar para escolher células não pode virar seleção de texto. */
+.grade-simples tbody {
+  user-select: none;
+}
+
+/* Uma linha só: o nome ocupa o espaço e o vendedor/OS fica no canto. É o que mantém
+   as 25 linhas da semana dentro da tela. */
+/* O tamanho é o de partida: nome que não cabe encolhe até 9 px (a agenda mede e reduz). */
+.card-simples .nome {
+  flex: 1;
+  min-width: 0;
+  font-weight: 700;
+  font-size: 13px;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.card-simples .nome.nome-fim {
+  font-size: 11px;
+}
+
+.card-simples.card-alto .nome {
+  flex: 0 0 auto;
+}
+
+.card-simples.card-alto .detalhe {
+  max-width: 100%;
+  text-align: left;
+}
+
+.card-simples .sem-os {
+  color: #b45309;
+  font-weight: 700;
+}
+
+.card-simples .detalhe {
+  flex: 0 999 auto;
+  min-width: 0;
+  max-width: 38%;
+  font-size: 10px;
+  color: var(--texto-suave);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* A alça do canto, como a da planilha: puxa o serviço para baixo, por horários. */
+.punho-canto {
+  position: absolute;
+  right: 1px;
+  bottom: 1px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  border: 1px solid var(--primaria);
+  border-radius: 3px;
+  background: #fff;
+  color: var(--primaria);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: ns-resize;
+  touch-action: none;
+  opacity: 0;
+  z-index: 2;
+}
+
+.card-simples.selecionado .punho-canto,
+.card-simples.em-previa .punho-canto {
+  opacity: 1;
+}
+
+/* Espaço para a alça não cobrir o nome repetido do fim. */
+.card-simples.card-alto .nome-fim {
+  padding-right: 18px;
+}
+
+.card-simples.em-previa {
+  box-shadow: 0 0 0 2px var(--primaria);
+  background-color: var(--primaria-clara);
+}
+
+.card-simples .veio-de-antes {
+  color: var(--texto-suave);
+}
+
+.card-simples.selecionado,
+.card-simples.copia-realcada {
+  box-shadow: 0 0 0 2px var(--primaria);
+  border-color: var(--primaria);
+}
+
+.card-simples.recortado {
+  opacity: 0.55;
+  border-style: dashed;
+}
+
+.card-simples.em-arrasto {
+  opacity: 0.4;
+}
+
+/* Indisponível (férias, falta, atestado): vermelho, para saltar aos olhos na grade. */
+.card-simples.card-indisponivel {
+  background-color: #fee2e2;
+  border-color: #b91c1c;
+  color: #991b1b;
+}
+
+.card-simples.card-indisponivel .nome {
+  font-weight: 700;
+  letter-spacing: 0.3px;
+}
+
+.card-simples.card-indisponivel::before {
+  background: #b91c1c;
+}
+
+.card-simples .campo-celula,
+.grade-simples .campo-celula {
+  width: 100%;
+  height: calc(var(--altura-linha) - 4px);
+  box-sizing: border-box;
+  border: 2px solid var(--primaria);
+  border-radius: 3px;
+  padding: 0 4px;
+  font: inherit;
+  font-weight: 700;
+  font-size: 12px;
+  background: #fff;
+}
+
+/* ---------------------------------------------------------------- menu do botão direito */
+
+.menu-contexto {
+  position: fixed;
+  z-index: 60;
+  min-width: 230px;
+  padding: 5px;
+  background: var(--superficie);
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.22);
+}
+
+.menu-titulo {
+  padding: 5px 9px 7px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--texto-suave);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.menu-item {
+  display: block;
+  width: 100%;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  text-align: left;
+  font: inherit;
+  font-size: 14px;
+  color: var(--texto);
+  cursor: pointer;
+}
+
+/* A bolinha usa a cor forte do status (a mesma barra lateral do card). */
+.menu-cor {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  background: var(--barra, #94a3b8);
+  margin-right: 8px;
+  border: 1px solid rgba(15, 23, 42, 0.25);
+  border-radius: 3px;
+  vertical-align: -1px;
+}
+
+.menu-atual {
+  font-weight: 700;
+}
+
+.menu-marca {
+  float: right;
+  color: var(--primaria);
+}
+
+.menu-item:hover:not(:disabled) {
+  background: var(--primaria-clara);
+}
+
+.menu-item:disabled {
+  color: #94a3b8;
+  cursor: default;
+}
+
+.menu-item.menu-perigo:not(:disabled) {
+  color: var(--perigo);
+}
+
+.menu-separador {
+  height: 1px;
+  margin: 4px 6px;
+  background: var(--borda);
+}
+
+/* Tela baixa (notebook de 768px): a semana continua inteira na tela, com as linhas e a
+   letra um pouco menores. */
+@media (max-height: 850px) {
+  .pagina-simples {
+    margin-top: -24px;
+  }
+
+  .cabecalho-simples h1 {
+    font-size: 18px;
+  }
+
+  .cabecalho-simples {
+    margin-bottom: 2px;
+  }
+
+  .pagina-simples .nav-mes {
+    margin-bottom: 4px;
+    gap: 4px;
+  }
+
+  .pagina-simples .nav-mes button {
+    padding: 4px 10px;
+    font-size: 12px;
+  }
+
+  .quadro-simples {
+    padding: 2px;
+  }
+
+  .grade-simples {
+    --altura-linha: 19px;
+  }
+
+  .grade-simples {
+    font-size: 11px;
+  }
+
+  .card-simples .nome {
+    font-size: 11px;
+  }
+
+  /* A sigla do vendedor acompanha o nome. */
+  .card-simples .vendedor-na-barra {
+    font-size: 11px;
+  }
+
+  .card-simples.com-vendedor {
+    --largura-sigla: calc(var(--sigla, 1) * 8px + 6px);
+  }
+}
+
+/* O serviço da OS (a "campanha" do ERP), embaixo do número na consulta. */
+.servico-da-os {
+  display: block;
+  color: var(--texto-suave);
+  font-size: 12px;
+  font-weight: 400;
+}
+
+/* Cadastro de usuário: as seções que a pessoa acessa, em cima do padrão do perfil. */
+.lista-secoes {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 6px 14px;
+  margin-top: 6px;
+}
+
+.secao-opcao {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-weight: 400;
+  cursor: pointer;
+}
+
+.secao-opcao input {
+  width: auto;
+  margin-top: 3px;
+}
+
+.secao-a-mais {
+  color: #15803d;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 700;
+}
+
+.secao-tirada {
+  color: #b91c1c;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 700;
+}
+
+.resumo-secoes {
+  display: block;
+  color: var(--texto-suave);
+  font-size: 12px;
+}
+
+/* Administração → Permissões: seção × perfil. */
+.tabela-permissoes th:not(:first-child),
+.tabela-permissoes .celula-permissao {
+  text-align: center;
+  white-space: nowrap;
+}
+
+.tabela-permissoes .celula-permissao input {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+/* Pausas do projeto: o aviso na Minha agenda e no painel, e o ícone do relatório. */
+.projeto-pausado {
+  display: inline-block;
+  margin: 4px 0;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: #e0e7ff;
+  color: #3730a3;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.painel-pausado {
+  font-weight: 700;
+}
+
+.icone-pausa {
+  margin-left: 6px;
+  color: #4f46e5;
+  cursor: help;
+}
+
+/* Relatório: concluído direto na agenda, sem o adesivador concluir. */
+.rel-sem-conclusao {
+  display: inline-block;
+  min-width: 18px;
+  padding: 0 5px;
+  border-radius: 9px;
+  background: #fef3c7;
+  color: #92400e;
+  font-weight: 800;
+  text-align: center;
+  cursor: help;
+}
+
+/* O aviso "agindo como" mora dentro do topo fixo: não precisa ser fixo sozinho. */
+.topo .faixa-agindo-como {
+  position: static;
+}
+
+/* Relatório: horário com o nome de quem registrou ao passar o mouse. */
+.rel-quem {
+  cursor: help;
+  border-bottom: 1px dotted currentColor;
+}
+
+/* Painel: quem pode agir pelo painel vê que o card responde ao botão direito. */
+.painel-com-acoes .painel-projetos li,
+.painel-com-acoes .painel-atual:not(.painel-atual-vazio) {
+  cursor: context-menu;
+}
+
+/* Painel: navegar entre os dias da agenda dos adesivadores (setas, calendário, Hoje). */
+.titulo-com-acoes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+}
+
+.navegador-de-dia {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+.campo-data {
+  width: auto;
+  padding: 6px 8px;
+  font-size: 14px;
+}
+
+/* Painel: a área de destaque, com um card "Agora" para cada serviço em execução. */
+.painel-destaque {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* ============================================================ celular
+
+   No PC nada muda. Até 760px (celular, tablet em pé):
+   - o topo vira uma linha só (logo + ☰); menu e dados da pessoa abrem numa gaveta;
+   - o aviso "agindo como" vira uma linha curta;
+   - as tabelas marcadas com .tabela-cartoes viram um cartão por linha, com o nome do
+     campo (data-rotulo) à esquerda e o valor à direita;
+   - o que era largo quebra linha em vez de alargar a página. */
+
+/* No PC a gaveta não existe: menu e pessoa ficam direto na barra, como sempre. */
+.topo-gaveta {
+  display: contents;
+}
+
+.topo-menu-botao {
+  display: none;
+}
+
+.faixa-agindo-curta {
+  display: none;
+}
+
+@media (max-width: 760px) {
+  .topo-interno {
+    position: relative;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+    gap: 12px;
+    min-height: 52px;
+    padding: 0 12px;
+  }
+
+  .topo-menu-botao {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 38px;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    background: #1e293b;
+    color: #f8fafc;
+    font-size: 20px;
+    cursor: pointer;
+  }
+
+  .topo-gaveta {
+    display: none;
+  }
+
+  /* A gaveta abre por baixo do topo e cobre a tela; rola se o menu for grande. */
+  .topo-gaveta.aberta {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-height: calc(100vh - 60px);
+    overflow-y: auto;
+    padding: 10px 12px 16px;
+    background: #0f172a;
+    border-top: 1px solid #1e293b;
+    box-shadow: 0 12px 24px rgba(15, 23, 42, 0.4);
+  }
+
+  .topo-gaveta .nav {
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .topo-gaveta .nav a {
+    padding: 12px 14px;
+    font-size: 16px;
+  }
+
+  .topo-gaveta .usuario-topo {
+    flex-wrap: wrap;
+    padding-top: 10px;
+    border-top: 1px solid #1e293b;
+  }
+
+  .topo-gaveta .agir-como {
+    max-width: none;
+    flex: 1 1 100%;
+  }
+
+  .faixa-agindo-como {
+    flex-wrap: nowrap;
+    gap: 8px;
+    padding: 6px 12px;
+    font-size: 13px;
+  }
+
+  .faixa-agindo-longa {
+    display: none;
+  }
+
+  .faixa-agindo-curta {
+    display: block;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .faixa-agindo-como-acoes {
+    flex: none;
+    gap: 6px;
+  }
+
+  .faixa-agindo-como-acoes .agir-como {
+    max-width: 120px;
+  }
+
+  .faixa-agindo-como-acoes .botao {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+
+  .conteudo {
+    padding: 16px 12px 48px;
+  }
+
+  /* Quem estava alargando a página. */
+  .nav-mes-topo {
+    flex-wrap: wrap;
+  }
+
+  .nav-mes-nome {
+    min-width: 0;
+  }
+
+  .duas-colunas > *,
+  .relatorio-lista > * {
+    min-width: 0;
+  }
+
+  .relatorio-cabecalho {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .relatorio-resumo {
+    gap: 6px 12px;
+  }
+
+  .navegador-de-dia {
+    flex-wrap: wrap;
+  }
+
+  /* Tabelas em cartões. */
+  table.tabela-cartoes,
+  table.tabela-cartoes tbody,
+  table.tabela-cartoes tfoot,
+  table.tabela-cartoes tr,
+  table.tabela-cartoes td {
+    display: block;
+    width: 100%;
+  }
+
+  table.tabela-cartoes {
+    min-width: 0;
+    table-layout: auto;
+  }
+
+  table.tabela-cartoes colgroup,
+  table.tabela-cartoes thead {
+    display: none;
+  }
+
+  table.tabela-cartoes tr {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin: 8px 0;
+    padding: 10px 12px;
+    border: 1px solid var(--borda);
+    border-radius: 10px;
+    background: var(--superficie);
+  }
+
+  table.tabela-cartoes td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 3px 0;
+    border: none;
+    text-align: right;
+  }
+
+  table.tabela-cartoes td[data-rotulo]::before {
+    content: attr(data-rotulo);
+    flex: none;
+    color: var(--texto-suave);
+    font-size: 12px;
+    font-weight: 600;
+    text-align: left;
+  }
+
+  /* O título do cartão (o carro, a OS, a pessoa) vem primeiro e ocupa a linha toda. */
+  table.tabela-cartoes td.celula-titulo {
+    order: -1;
+    justify-content: flex-start;
+    text-align: left;
+    font-size: 15px;
+    padding-bottom: 6px;
+    margin-bottom: 4px;
+    border-bottom: 1px solid var(--borda);
+  }
+
+  table.tabela-cartoes td.celula-acoes {
+    justify-content: flex-start;
+    padding-top: 8px;
+  }
 }

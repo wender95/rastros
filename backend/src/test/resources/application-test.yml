@@ -2,7 +2,7 @@
 # os testes tambem provam que o schema versionado basta para a aplicacao funcionar.
 spring:
   datasource:
-    url: jdbc:h2:mem:ostracker-teste;DB_CLOSE_DELAY=-1;MODE=PostgreSQL
+    url: jdbc:h2:mem:rastros-teste;DB_CLOSE_DELAY=-1;MODE=PostgreSQL
     username: sa
     password: ""
     driver-class-name: org.h2.Driver
@@ -12,7 +12,9 @@ spring:
         # Para o teste de desempenho contar as consultas SQL de cada tela.
         generate_statistics: true
 
-ostracker:
+rastros:
+  # Os testes montam os proprios dados: sem a demonstracao completa.
+  demo-completa: false
   jwt:
     secret: chave-de-teste-com-mais-de-trinta-e-dois-bytes-2026
   backup:

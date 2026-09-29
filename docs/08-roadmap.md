@@ -21,7 +21,7 @@
 
 ### Fase 4 — Operação
 - Um único `.jar`; sobe com o Windows; backup diário e antes de cada migração; restauração.
-- Migrações Flyway (V1–V9); PostgreSQL comprovado em teste.
+- Migrações Flyway (V1–V11); PostgreSQL comprovado em teste.
 - Uso no celular: telas responsivas, *Minha agenda* do adesivador, app instalável.
 - A Frota trabalha só pela própria agenda; a agenda acompanha a Frota sozinha.
 

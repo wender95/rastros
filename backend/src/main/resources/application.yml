@@ -3,9 +3,9 @@ server:
 
 spring:
   application:
-    name: os-tracker-api
+    name: rastros-api
   datasource:
-    url: ${DB_URL:jdbc:h2:file:./data/ostracker;DB_CLOSE_DELAY=-1;MODE=PostgreSQL}
+    url: ${DB_URL:jdbc:h2:file:./data/rastros;DB_CLOSE_DELAY=-1;MODE=PostgreSQL}
     username: ${DB_USER:sa}
     password: ${DB_PASSWORD:}
     driver-class-name: ${DB_DRIVER:org.h2.Driver}
@@ -35,10 +35,21 @@ spring:
     serialization:
       write-dates-as-timestamps: false
 
-ostracker:
+rastros:
   # Dados ficticios (OS de exemplo e usuarios de demonstracao) num banco vazio. Em
   # producao fica desligado: so perfis, setores, matriz e um administrador.
   carga-demo: ${CARGA_DEMO:true}
+  # Na demonstracao, gera tambem a operacao completa: equipe da Frota, agenda com um projeto
+  # por dia por adesivador (inicio e conclusao registrados) e OS passando pelos setores.
+  demo-completa: ${DEMO_COMPLETA:true}
+  # A empresa que usa esta instalacao do RastrOS (nome e logo branca, em static/ ou uma URL).
+  empresa:
+    nome: ${EMPRESA_NOME:RastrOS}
+    logo: ${EMPRESA_LOGO:/rastros-logo-branca.svg}
+  # Fase de teste: o administrador pode "agir como" qualquer usuario, sem a senha dele.
+  # Desligue quando o teste acabar com PERSONIFICACAO=false.
+  personificacao:
+    habilitada: ${PERSONIFICACAO:true}
   jwt:
     # Vazio: a instalacao gera a propria chave em data/jwt.secret na primeira partida.
     secret: ${JWT_SECRET:}
@@ -50,9 +61,18 @@ ostracker:
     # Todo dia util as 12:30 (segundo minuto hora dia mes dia-da-semana).
     cron: ${BACKUP_CRON:0 30 12 * * MON-FRI}
   cors:
-    origens: ${CORS_ORIGENS:http://localhost:5173,http://127.0.0.1:5173}
+    # A extensao do navegador entra como chrome-extension://<id>, e o id muda de maquina
+    # para maquina; o que barra de verdade continua sendo o login, nao a origem.
+    origens: ${CORS_ORIGENS:http://localhost:5173,http://127.0.0.1:5173,chrome-extension://*,moz-extension://*}
 
 logging:
   level:
     root: INFO
-    com.ostracker: INFO
+    com.rastros: INFO
+
+# Previsao do tempo do painel (Open-Meteo, sem chave). A cidade da empresa; troque pelas
+# variaveis CLIMA_CIDADE, CLIMA_LATITUDE e CLIMA_LONGITUDE se nao for Sao Paulo.
+clima:
+  cidade: ${CLIMA_CIDADE:Sao Paulo}
+  latitude: ${CLIMA_LATITUDE:-23.5505}
+  longitude: ${CLIMA_LONGITUDE:-46.6333}
