@@ -3,7 +3,7 @@
 **Rastreabilidade de Ordens de Serviço e agenda de instalação para uma empresa de
 comunicação visual** — em produção na internet, no domínio
 próprio `rastros.cloud` (um subdomínio por empresa usuária), usado todo dia pela equipe no
-computador e no celular desde setembro de 2026.
+computador e no celular.
 
 Kotlin · Spring Boot 3 · React 18 · TypeScript · H2 / PostgreSQL · Flyway · JWT · Cloudflare Tunnel
 
