@@ -7,6 +7,20 @@ computador e no celular desde setembro de 2026.
 
 Kotlin · Spring Boot 3 · React 18 · TypeScript · H2 / PostgreSQL · Flyway · JWT · Cloudflare Tunnel
 
+![Painel operacional: o que cada adesivador está fazendo agora](docs/imagens/painel.png)
+
+| Agenda dos adesivadores | No celular: Minha agenda e Impressão |
+| :---: | :---: |
+| ![Agenda do mês, no formato da planilha](docs/imagens/agenda.png) | <img src="docs/imagens/minha-agenda-celular.png" width="180" alt="Minha agenda do adesivador"> <img src="docs/imagens/movimentar-celular.png" width="180" alt="Tela do operador de impressão"> |
+
+<details>
+<summary>Produtividade por setor e por pessoa</summary>
+
+![Produtividade](docs/imagens/produtividade.png)
+</details>
+
+*Prints da versão de demonstração, com dados fictícios.*
+
 ---
 
 ## O problema
